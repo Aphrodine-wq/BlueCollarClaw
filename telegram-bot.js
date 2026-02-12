@@ -3,26 +3,59 @@
 /**
  * ClawShake Telegram Bot - Natural Language Job Posting
  * Parses natural language job descriptions and creates ClawShake job postings
+ * 
+ * Usage: TELEGRAM_BOT_TOKEN=your_token npm run telegram
  */
 
 const TelegramBot = require('node-telegram-bot-api');
-const { Pool } = require('pg');
-const natural = require('natural');
-const tokenizer = new natural.WordTokenizer();
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 // Load configuration
 const config = require('./config');
 
 // Initialize Telegram bot
-const bot = new TelegramBot(config.telegramToken, { polling: true });
+const token = process.env.TELEGRAM_BOT_TOKEN || config.telegramToken;
+if (!token || token === 'YOUR_TELEGRAM_BOT_TOKEN_HERE') {
+  console.error('❌ Error: TELEGRAM_BOT_TOKEN not set!');
+  console.error('Get your token from @BotFather on Telegram');
+  console.error('Then run: TELEGRAM_BOT_TOKEN=your_token npm run telegram');
+  process.exit(1);
+}
 
-// Initialize database connection
-const pool = new Pool({
-  user: config.dbUser,
-  host: config.dbHost,
-  database: config.dbName,
-  password: config.dbPassword,
-  port: config.dbPort,
+const bot = new TelegramBot(token, { polling: true });
+
+// Initialize SQLite database (same as main ClawShake)
+const dbPath = path.join(__dirname, 'clawshake.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('❌ Error opening database:', err.message);
+    process.exit(1);
+  }
+  console.log('✅ Connected to ClawShake database');
+});
+
+// Create tables if they don't exist
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS telegram_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_user_id INTEGER,
+    category TEXT,
+    description TEXT,
+    location TEXT,
+    budget INTEGER,
+    is_urgent BOOLEAN,
+    status TEXT DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+  
+  db.run(`CREATE TABLE IF NOT EXISTS telegram_users (
+    telegram_id INTEGER PRIMARY KEY,
+    username TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
 
 // Training data for natural language processing
@@ -45,7 +78,6 @@ const jobCategories = [
  */
 function parseJobDescription(text) {
   const lowerText = text.toLowerCase();
-  const tokens = tokenizer.tokenize(lowerText);
   
   // Extract job category - check in order of specificity
   let category = 'general-contracting';
@@ -90,7 +122,7 @@ function parseJobDescription(text) {
   const urgencyKeywords = ['urgent', 'emergency', 'asap', 'today', 'tomorrow'];
   let isUrgent = false;
   for (const keyword of urgencyKeywords) {
-    if (tokens.includes(keyword)) {
+    if (lowerText.includes(keyword)) {
       isUrgent = true;
       break;
     }
@@ -125,57 +157,58 @@ function parseJobDescription(text) {
 /**
  * Create job posting in ClawShake
  * @param {object} jobData - Parsed job data
- * @param {number} userId - Telegram user ID
+ * @param {object} user - Telegram user object
  * @returns {Promise<object>} Created job posting
  */
-async function createJobPosting(jobData, userId) {
-  const client = await pool.connect();
-  try {
-    // Start transaction
-    await client.query('BEGIN');
+function createJobPosting(jobData, user) {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO telegram_jobs 
+      (telegram_user_id, category, description, location, budget, is_urgent, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
     
-    // Insert job posting
-    const jobResult = await client.query(`
-      INSERT INTO job_postings (
-        category,
-        description,
-        location,
-        budget,
-        is_urgent,
-        natural_language,
-        created_by,
-        status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `, [
+    db.run(sql, [
+      user.id,
       jobData.category,
       jobData.description,
-      jobData.location || null,
-      jobData.budget || null,
-      jobData.isUrgent || false,
-      true,
-      userId,
+      jobData.location,
+      jobData.budget,
+      jobData.isUrgent ? 1 : 0,
       'active'
-    ]);
+    ], function(err) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      
+      resolve({
+        id: this.lastID,
+        ...jobData,
+        telegram_user_id: user.id
+      });
+    });
+  });
+}
+
+/**
+ * Save or update Telegram user
+ * @param {object} user - Telegram user object
+ */
+function saveUser(user) {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT OR REPLACE INTO telegram_users 
+      (telegram_id, username, first_name, last_name) 
+      VALUES (?, ?, ?, ?)`;
     
-    const job = jobResult.rows[0];
-    
-    // Log the creation
-    await client.query(`
-      INSERT INTO job_logs (job_id, action, details)
-      VALUES ($1, $2, $3)
-    `, [job.id, 'created', 'Created via natural language bot']);
-    
-    // Commit transaction
-    await client.query('COMMIT');
-    
-    return job;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+    db.run(sql, [
+      user.id,
+      user.username || null,
+      user.first_name || null,
+      user.last_name || null
+    ], (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
 }
 
 /**
@@ -184,35 +217,42 @@ async function createJobPosting(jobData, userId) {
  */
 async function handleMessage(msg) {
   const chatId = msg.chat.id;
-  const userId = msg.from.id;
+  const user = msg.from;
   const text = msg.text;
+  
+  // Save user to database
+  await saveUser(user);
   
   if (!text || text.trim().length === 0) {
     await bot.sendMessage(chatId, 'Please send a job description.');
     return;
   }
   
+  // Skip commands
+  if (text.startsWith('/')) return;
+  
   try {
+    // Show typing indicator
+    await bot.sendChatAction(chatId, 'typing');
+    
     // Parse the natural language
     const jobData = parseJobDescription(text);
     
     // Create the job posting
-    const job = await createJobPosting(jobData, userId);
+    const job = await createJobPosting(jobData, user);
     
     // Send confirmation
     const message = `🎯 Job posted successfully!\n\n` +
-      `📋 **Job ID:** ${job.id}\n` +
-      `🏠 **Category:** ${job.category}\n` +
-      `📍 **Location:** ${job.location || 'Not specified'}\n` +
-      `💰 **Budget:** ${job.budget ? `$${job.budget}` : 'Not specified'}\n` +
-      `🚨 **Urgent:** ${job.is_urgent ? 'Yes' : 'No'}\n\n` +
-      `📞 We'll notify you when we find matching contractors!\n` +
-      `💡 You can also view this job at: ${config.dashboardUrl}/jobs/${job.id}`;
+      `📋 Job ID: #${job.id}\n` +
+      `🏠 Category: ${job.category}\n` +
+      `📍 Location: ${job.location || 'Not specified'}\n` +
+      `💰 Budget: ${job.budget ? `$${job.budget}` : 'Not specified'}\n` +
+      `🚨 Urgent: ${job.is_urgent ? 'Yes' : 'No'}\n\n` +
+      `📞 We'll notify you when we find matching contractors!`;
     
-    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, message);
     
-    // Send notification to matching contractors
-    await notifyMatchingContractors(job);
+    console.log(`✅ Job #${job.id} created by user ${user.id}: ${job.category}`);
     
   } catch (error) {
     console.error('Error handling message:', error);
@@ -220,54 +260,42 @@ async function handleMessage(msg) {
   }
 }
 
-/**
- * Notify matching contractors about new job
- * @param {object} job - Job posting data
- */
-async function notifyMatchingContractors(job) {
-  const client = await pool.connect();
-  try {
-    // Find contractors matching the job category and location
-    const contractors = await client.query(`
-      SELECT c.*
-      FROM contractors c
-      LEFT JOIN contractor_categories cc ON c.id = cc.contractor_id
-      WHERE (
-        cc.category = $1 OR
-        c.services ILIKE $1
-      ) AND (
-        c.location ILIKE $2 OR
-        $2 IS NULL
-      ) AND c.status = 'active'
-    `, [job.category, job.location]);
-    
-    // Send notifications to matching contractors
-    for (const contractor of contractors.rows) {
-      // Here you would integrate with your messaging system
-      // For now, we'll just log the notification
-      console.log(`Notifying contractor ${contractor.id} about job ${job.id}`);
-      
-      // In a real implementation, you'd send via WhatsApp/Telegram
-      // await sendNotification(contractor.messaging_id, job);
-    }
-  } catch (error) {
-    console.error('Error notifying contractors:', error);
-  } finally {
-    client.release();
-  }
-}
-
 // Handle bot commands
-bot.onText(/\/(start|help)/, async (msg) => {
+bot.onText(/\/start/, async (msg) => {
+  const chatId = msg.chat.id;
+  const user = msg.from;
+  
+  await saveUser(user);
+  
+  const welcomeMessage = `👋 Welcome to ClawShake!\n\n` +
+    `I help you find contractors by simply describing what you need.\n\n` +
+    `📝 Just send me a message like:\n` +
+    `• "I need a plumber to fix my bathroom sink"\n` +
+    `• "Looking for an electrician in Austin, budget $200"\n` +
+    `• "Need a painter ASAP for my living room"\n\n` +
+    `🤖 I'll automatically find matching contractors and notify you!\n\n` +
+    `Send /help for more info.`;
+  
+  await bot.sendMessage(chatId, welcomeMessage);
+});
+
+bot.onText(/\/help/, async (msg) => {
   const chatId = msg.chat.id;
   
-  const helpMessage = `🔧 **ClawShake Bot - Natural Language Job Posting**\n\n` +
-    `📝 Simply send me a message describing the job you need done. For example:\n\n` +
-    `• "I need a plumber to fix my bathroom sink"\n` +
-    `• "Looking for an electrician to install new outlets in my kitchen"\n` +
-    `• "Need a painter to paint my living room walls"\n\n` +
-    `🎯 I'll automatically create the job posting and notify matching contractors!\n\n` +
-    `📞 Type your job description and send it to me anytime.`;
+  const helpMessage = `🔧 **ClawShake Bot Help**\n\n` +
+    `📝 **How to post a job:**\n` +
+    `Just describe what you need in natural language. Include:\n` +
+    `• What trade (plumber, electrician, painter, etc.)\n` +
+    `• Location (optional: "in Austin")\n` +
+    `• Budget (optional: "budget $200")\n` +
+    `• Urgency (optional: "urgent", "ASAP")\n\n` +
+    `💡 **Examples:**\n` +
+    `• "I need a plumber to fix my kitchen sink"\n` +
+    `• "Electrician needed in Dallas for outlet installation, budget $150"\n` +
+    `• "Urgent: Need a handyman for general repairs tomorrow"\n\n` +
+    `🏠 **Supported trades:**\n` +
+    `Plumbing, Electrical, Painting, Carpentry, Landscaping, Cleaning, Handyman, General Contracting\n\n` +
+    `❓ Send any job description to get started!`;
   
   await bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
 });
@@ -277,7 +305,22 @@ bot.on('message', handleMessage);
 
 // Error handling
 bot.on('polling_error', (error) => {
-  console.error('Polling error:', error);
+  console.error('Polling error:', error.message);
 });
 
-console.log('ClawShake Telegram Bot started');
+bot.on('error', (error) => {
+  console.error('Bot error:', error.message);
+});
+
+console.log('🤖 ClawShake Telegram Bot started');
+console.log('📱 Waiting for messages...');
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n👋 Shutting down bot...');
+  db.close((err) => {
+    if (err) console.error('Error closing database:', err.message);
+    else console.log('✅ Database connection closed');
+    process.exit(0);
+  });
+});

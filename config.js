@@ -1,28 +1,14 @@
 module.exports = {
   // Telegram Bot API Token (get from @BotFather)
+  // Can also set via TELEGRAM_BOT_TOKEN environment variable
   telegramToken: process.env.TELEGRAM_BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN_HERE',
   
-  // Database configuration
-  dbUser: process.env.DB_USER || 'postgres',
-  dbPassword: process.env.DB_PASSWORD || 'your_password',
-  dbHost: process.env.DB_HOST || 'localhost',
-  dbPort: process.env.DB_PORT || 5432,
-  dbName: process.env.DB_NAME || 'clawshake',
-  
-  // Dashboard URL
+  // Dashboard URL (for job links)
   dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
   
-  // Messaging integration (for notifications)
-  messaging: {
-    whatsapp: {
-      enabled: false,
-      accountSid: process.env.WHATSAPP_ACCOUNT_SID || null,
-      authToken: process.env.WHATSAPP_AUTH_TOKEN || null,
-      phoneNumber: process.env.WHATSAPP_PHONE_NUMBER || null,
-    },
-    telegram: {
-      enabled: true,
-      botToken: process.env.TELEGRAM_BOT_TOKEN || null,
-    }
-  }
+  // Database path (SQLite)
+  dbPath: process.env.DB_PATH || './clawshake.db',
+  
+  // Node environment
+  nodeEnv: process.env.NODE_ENV || 'development'
 };
