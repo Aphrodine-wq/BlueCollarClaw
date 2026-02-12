@@ -1,0 +1,340 @@
+#!/usr/bin/env node
+
+const Database = require('./database');
+const BlueCollarClawNetwork = require('./network');
+const NegotiationEngine = require('./negotiation');
+const ContractGenerator = require('./contracts');
+const { SimpleCalendar } = require('./calendar');
+const { nanoid } = require('nanoid');
+
+console.log('=== BlueCollarClaw Local Demo (No MQTT) ===\n');
+console.log('Simulating a GC finding a plumber via BlueCollarClaw...\n');
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function demo() {
+  const db = new Database('./demo.db');
+  
+  // Wait for DB init
+  await sleep(200);
+
+  console.log('📋 Step 1: Creating Contractor Profiles\n');
+
+  // Create GC
+  const gcKeys = BlueCollarClawNetwork.generateKeypair();
+  const gcId = `gc_${nanoid(8)}`;
+  
+  await new Promise((resolve, reject) => {
+    db.createContractor({
+      id: gcId,
+      name: 'Austin General Construction',
+      publicKey: gcKeys.publicKey,
+      privateKey: gcKeys.privateKey,
+    }, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  await new Promise((resolve) => {
+    db.addTrade(gcId, 'general_contractor', () => resolve());
+  });
+
+  console.log(`  ✅ Created GC: Austin General Construction (${gcId})`);
+
+  // Create Plumber
+  const plumberKeys = BlueCollarClawNetwork.generateKeypair();
+  const plumberId = `plumber_${nanoid(8)}`;
+  
+  await new Promise((resolve, reject) => {
+    db.createContractor({
+      id: plumberId,
+      name: "Mike's Plumbing Co",
+      publicKey: plumberKeys.publicKey,
+      privateKey: plumberKeys.privateKey,
+    }, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  await new Promise((resolve) => {
+    db.addTrade(plumberId, 'plumber', () => resolve());
+  });
+
+  console.log(`  ✅ Created Plumber: Mike's Plumbing Co (${plumberId})`);
+  console.log();
+
+  await sleep(500);
+
+  // Create job request
+  console.log('📢 Step 2: GC Broadcasts Job Request\n');
+  
+  const requestId = `req_${nanoid()}`;
+  const jobRequest = {
+    id: requestId,
+    requesterId: gcId,
+    trade: 'plumber',
+    location: '423 Oak St, Austin, TX',
+    latitude: 30.2672,
+    longitude: -97.7431,
+    startDate: '2026-02-19',
+    endDate: '2026-02-21',
+    minRate: 80,
+    maxRate: 100,
+    scope: 'Rough-in plumbing for residential remodel, 1,200 sqft. Licensed and insured required.',
+    requirements: 'licensed, insured',
+  };
+
+  await new Promise((resolve, reject) => {
+    db.createJobRequest(jobRequest, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  console.log('  📋 Job Request Details:');
+  console.log(`     Trade: ${jobRequest.trade}`);
+  console.log(`     Location: ${jobRequest.location}`);
+  console.log(`     Dates: ${jobRequest.startDate} to ${jobRequest.endDate}`);
+  console.log(`     Rate Range: $${jobRequest.minRate}-$${jobRequest.maxRate}/hr`);
+  console.log(`     Scope: ${jobRequest.scope}`);
+  console.log();
+
+  await sleep(1000);
+
+  // Plumber evaluates
+  console.log('🤖 Step 3: Plumber Agent Evaluates Request\n');
+
+  const plumberProfile = {
+    id: plumberId,
+    name: "Mike's Plumbing Co",
+    trades: [{ trade: 'plumber', licensed: true, insurance_verified: true }],
+    serviceAreas: [
+      { city: 'Austin', state: 'TX', latitude: 30.2672, longitude: -97.7431, radius_miles: 25 }
+    ],
+    ratePreferences: [
+      { trade: 'plumber', min_rate: 75, preferred_rate: 90, max_rate: 120 }
+    ],
+    availability: [
+      { start_date: '2026-02-15', end_date: '2026-02-28', status: 'available' }
+    ],
+    autoNegotiate: true,
+  };
+
+  const engine = new NegotiationEngine(db, plumberId);
+  const evaluation = await engine.evaluateRequest(jobRequest, plumberProfile);
+
+  console.log('  📊 Match Evaluation:');
+  console.log(`     Match: ${evaluation.matches ? '✅ YES' : '❌ NO'}`);
+  console.log(`     Score: ${evaluation.score}/100`);
+  console.log(`     Reasons: ${evaluation.reasons.join(', ')}`);
+  
+  if (evaluation.suggestedOffer) {
+    console.log(`     Suggested Rate: $${evaluation.suggestedOffer.rate}/hr`);
+  }
+  console.log();
+
+  await sleep(1000);
+
+  // Make decision
+  const decision = await engine.makeDecision(jobRequest, evaluation, plumberProfile);
+  
+  console.log('🧠 Step 4: AI Decision\n');
+  console.log(`  Decision: ${decision.action}`);
+  console.log(`  Confidence: ${decision.confidence}%`);
+  
+  if (decision.action === 'SUGGEST' || decision.action === 'ACCEPT') {
+    console.log(`  Offering: $${decision.offer?.rate || evaluation.suggestedOffer.rate}/hr`);
+  }
+  console.log();
+
+  await sleep(1000);
+
+  // Create offer
+  console.log('💼 Step 5: Plumber Sends Offer\n');
+
+  const offerId = `offer_${nanoid()}`;
+  const offer = {
+    id: offerId,
+    requestId: requestId,
+    contractorId: plumberId,
+    rate: evaluation.suggestedOffer.rate,
+    startDate: jobRequest.startDate,
+    endDate: jobRequest.endDate,
+    message: `Available at $${evaluation.suggestedOffer.rate}/hr. Licensed and insured, 15 years experience.`,
+    round: 1,
+  };
+
+  await new Promise((resolve, reject) => {
+    db.createOffer(offer, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  console.log('  📨 Offer Sent:');
+  console.log(`     Contractor: Mike's Plumbing Co`);
+  console.log(`     Rate: $${offer.rate}/hr`);
+  console.log(`     Dates: ${offer.startDate} to ${offer.endDate}`);
+  console.log(`     Message: "${offer.message}"`);
+  console.log();
+
+  await sleep(1000);
+
+  // GC accepts
+  console.log('✅ Step 6: GC Accepts Offer\n');
+
+  // Get GC contractor for reputation
+  await new Promise((resolve) => {
+    db.getContractorReputation(plumberId, (err, reputation) => {
+      console.log('  📊 Plumber Reputation:');
+      if (reputation && reputation.total_ratings > 0) {
+        console.log(`     Rating: ${reputation.average_score}★ (${reputation.total_ratings} jobs)`);
+      } else {
+        console.log('     Rating: No ratings yet (new to BlueCollarClaw)');
+      }
+      resolve();
+    });
+  });
+
+  console.log();
+  console.log('  💬 GC Decision: ACCEPT');
+  console.log();
+
+  await sleep(1000);
+
+  // Create booking
+  console.log('📝 Step 7: Generate Contract & Calendar Event\n');
+
+  const bookingId = `booking_${nanoid()}`;
+  
+  const contracts = new ContractGenerator('./contracts');
+  const calendar = new SimpleCalendar();
+
+  const gcInfo = { id: gcId, name: 'Austin General Construction', license: 'TX-GC-12345' };
+  const subInfo = { id: plumberId, name: "Mike's Plumbing Co", license: 'TX-MP-67890' };
+
+  const booking = {
+    id: bookingId,
+    requestId: requestId,
+    offerId: offerId,
+    gcId: gcId,
+    subId: plumberId,
+    trade: jobRequest.trade,
+    location: jobRequest.location,
+    startDate: offer.startDate,
+    endDate: offer.endDate,
+    rate: offer.rate,
+    scope: jobRequest.scope,
+  };
+
+  // Generate contract
+  const contractPath = await contracts.generateSubcontractorAgreement(
+    booking,
+    gcInfo,
+    subInfo
+  );
+
+  console.log(`  📄 Contract Generated: ${contractPath}`);
+
+  // Create calendar event
+  const calendarEventId = await calendar.createBookingEvent(
+    booking,
+    gcInfo,
+    subInfo
+  );
+
+  console.log(`  📅 Calendar Event Created: ${calendarEventId}`);
+
+  booking.contractUrl = contractPath;
+  booking.calendarEventId = calendarEventId;
+
+  // Save booking
+  await new Promise((resolve, reject) => {
+    db.createBooking(booking, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+  console.log();
+
+  await sleep(500);
+
+  console.log('🎉 Step 8: Booking Confirmed!\n');
+  console.log('  ═══════════════════════════════════════════════');
+  console.log('  📋 BOOKING SUMMARY');
+  console.log('  ═══════════════════════════════════════════════');
+  console.log(`  Booking ID: ${bookingId}`);
+  console.log(`  GC: Austin General Construction`);
+  console.log(`  Subcontractor: Mike's Plumbing Co`);
+  console.log(`  Trade: Plumber`);
+  console.log(`  Location: 423 Oak St, Austin, TX`);
+  console.log(`  Dates: Feb 19-21, 2026`);
+  console.log(`  Rate: $${offer.rate}/hr`);
+  console.log(`  Estimated Hours: 24 (3 days × 8 hrs)`);
+  console.log(`  Estimated Total: $${offer.rate * 24}`);
+  console.log(`  Contract: ${contractPath}`);
+  console.log(`  Calendar: Added to both parties' calendars`);
+  console.log('  ═══════════════════════════════════════════════');
+  console.log();
+
+  await sleep(1000);
+
+  console.log('📊 Demo Statistics:\n');
+  
+  const stats = {
+    timeToMatch: '2 seconds',
+    negotiationRounds: 1,
+    humanInteractions: 0,
+    timeSaved: '2-3 hours (typical manual process)',
+  };
+
+  console.log(`  ⚡ Time to Match: ${stats.timeToMatch}`);
+  console.log(`  🔄 Negotiation Rounds: ${stats.negotiationRounds}`);
+  console.log(`  👤 Human Interactions: ${stats.humanInteractions}`);
+  console.log(`  ⏱️  Time Saved: ${stats.timeSaved}`);
+  console.log();
+
+  console.log('✨ Demo Complete!\n');
+  console.log('What just happened:');
+  console.log('  1. GC broadcasted a job request');
+  console.log('  2. Plumber agent auto-evaluated match (trade, location, rate, availability)');
+  console.log('  3. AI decided to make an offer at optimal rate');
+  console.log('  4. GC reviewed and accepted');
+  console.log('  5. Contract auto-generated');
+  console.log('  6. Calendar events created for both parties');
+  console.log('  7. Booking confirmed\n');
+
+  console.log('💡 In production:');
+  console.log('  - This would happen via MQTT network (agents talking to each other)');
+  console.log('  - GC would get WhatsApp/Telegram notification');
+  console.log('  - Multiple plumbers would compete simultaneously');
+  console.log('  - Multi-round negotiation if rates don\'t match');
+  console.log('  - Real calendar integration (Google/Outlook)');
+  console.log('  - Escrow payment on booking confirmation\n');
+
+  console.log('🚀 Next Steps:');
+  console.log('  1. Run: npm run server');
+  console.log('  2. Open: http://localhost:3000');
+  console.log('  3. See this booking in the live dashboard!');
+  console.log();
+
+  console.log('📖 Read the docs:');
+  console.log('  - README.md for full product vision');
+  console.log('  - QUICKSTART.md to set up real contractors');
+  console.log('  - ARCHITECTURE.md for technical details\n');
+
+  // Close DB
+  await sleep(500);
+  db.close();
+  process.exit(0);
+}
+
+demo().catch(err => {
+  console.error('Demo error:', err);
+  process.exit(1);
+});

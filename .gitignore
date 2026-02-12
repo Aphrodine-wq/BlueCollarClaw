@@ -5,4 +5,4 @@ contracts/*.pdf
 .env
 .DS_Store
 google-credentials.json
-clawshake.db
+bluecollar-claw.db

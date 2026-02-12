@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs - BlueCollarClaw</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <a href="index.html" class="brand">
+                <img src="images/logo.svg" alt="BlueCollarClaw" class="brand-logo">
+                BlueCollarClaw
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
+                </a>
+                <a href="contractors.html" class="nav-item">
+                    <i data-lucide="hammer" class="nav-icon"></i> Contractors
+                </a>
+                <a href="jobs.html" class="nav-item active">
+                    <i data-lucide="calendar" class="nav-icon"></i> Job Requests
+                </a>
+                <a href="messages.html" class="nav-item">
+                    <i data-lucide="message-square" class="nav-icon"></i> Messages
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings" class="nav-icon"></i> Settings
+                </a>
+            </div>
+            <div class="nav-footer">
+                <a href="/auth/logout" class="nav-item">
+                    <i data-lucide="log-out" class="nav-icon"></i> Log Out
+                </a>
+            </div>
+        </nav>
+        <main class="main-content">
+            <div class="header">
+                <h1>Live Job Requests</h1>
+                <button class="cta-button">Post a Job</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Jobs</div>
+                    <div class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Open</div>
+                    <div class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Filled</div>
+                    <div class="stat-value">0</div>
+                </div>
+            </div>
+            <div class="section-card">
+                <div class="card-header">
+                    <div class="card-title">Recent Requests</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Trade</th>
+                                <th>Description / Urgency</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobs-list">
+                            <tr>
+                                <td colspan="5" class="text-loading">Loading jobs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Post Job Modal -->
+    <div class="modal-overlay" id="postJobModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Post a New Job</div>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="postJobForm">
+                    <div class="form-group">
+                        <label class="form-label" for="trade">Service Category</label>
+                        <select class="form-select" id="trade" name="trade" required aria-label="Select Trade">
+                            <option value="">Select a Trade...</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="HVAC">HVAC</option>
+                            <option value="Carpentry">Carpentry</option>
+                            <option value="General">General Handyman</option>
+                            <option value="Landscaping">Landscaping</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="urgency">Urgency</label>
+                        <select class="form-select" id="urgency" name="urgency" required aria-label="Select Urgency">
+                            <option value="Normal">Normal (This week)</option>
+                            <option value="High">High (Next 48h)</option>
+                            <option value="Emergency">🚨 Emergency (ASAP)</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="location">Location</label>
+                        <input type="text" class="form-input" id="location" name="location"
+                            placeholder="e.g. 123 Main St, Springfield" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="max_rate">Max Hourly Rate ($/hr) <span
+                                class="form-helper">(Optional)</span></label>
+                        <input type="number" class="form-input" id="max_rate" name="max_rate" placeholder="e.g. 50">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Detailed Description</label>
+                        <textarea class="form-input" id="description" name="description"
+                            placeholder="Please describe the issue in detail. Include specific symptoms, equipment brands, or access instructions. This helps our AI agents match you effectively."
+                            required></textarea>
+                        <div class="form-helper">Be as specific as possible so OpenClaw Agents can understand your
+                            needs.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="submitJobBtn">Post Job</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load Jobs Logic
+        function loadJobs() {
+            fetch('/api/requests')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('jobs-list');
+                    const totalVal = document.querySelector('.stat-value'); // Quick hack for stats
+                    if (totalVal) totalVal.textContent = data.length;
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-loading">No job requests found.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.map(j => `
+                    <tr>
+                        <td>#${j.id.substring(0, 8)}...</td>
+                        <td>${j.trade}</td>
+                        <td>${j.description.substring(0, 50)}${j.description.length > 50 ? '...' : ''}</td>
+                        <td>${j.location}</td>
+                        <td><span class="badge badge-warning">${j.status}</span></td>
+                    </tr>
+                `).join('');
+                })
+                .catch(e => console.error(e));
+        }
+
+        loadJobs();
+
+        // Modal Logic
+        const modal = document.getElementById('postJobModal');
+        const openBtn = document.querySelector('.cta-button');
+        const closeBtn = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const submitBtn = document.getElementById('submitJobBtn');
+        const form = document.getElementById('postJobForm');
+
+        function openModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            form.reset();
+        }
+
+        if (openBtn) openBtn.addEventListener('click', openModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Submit Logic
+        if (submitBtn) {
+            submitBtn.addEventListener('click', async (e) => {
+                e.preventDefault(); // Prevent default button behavior
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // Show loading state
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Posting...';
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/requests', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.status === 401) {
+                        window.location.href = '/login.html';
+                        throw new Error('Unauthorized');
+                    }
+
+                    const result = await res.json();
+                    if (result.error) throw new Error(result.error);
+
+                    alert('Job posted successfully! An AI agent will review it shortly.');
+                    closeModal();
+                    loadJobs();
+                } catch (err) {
+                    console.error(err);
+                    if (err.message !== 'Unauthorized') alert('Error posting job: ' + err.message);
+                } finally {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

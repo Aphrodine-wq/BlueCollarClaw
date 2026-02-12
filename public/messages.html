@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - BlueCollarClaw</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <a href="index.html" class="brand">
+                <img src="images/logo.svg" alt="BlueCollarClaw" class="brand-logo">
+                BlueCollarClaw
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
+                </a>
+                <a href="contractors.html" class="nav-item">
+                    <i data-lucide="hammer" class="nav-icon"></i> Contractors
+                </a>
+                <a href="jobs.html" class="nav-item">
+                    <i data-lucide="calendar" class="nav-icon"></i> Job Requests
+                </a>
+                <a href="messages.html" class="nav-item active">
+                    <i data-lucide="message-square" class="nav-icon"></i> Messages
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings" class="nav-icon"></i> Settings
+                </a>
+            </div>
+            <div class="nav-footer">
+                <a href="/auth/logout" class="nav-item">
+                    <i data-lucide="log-out" class="nav-icon"></i> Log Out
+                </a>
+            </div>
+        </nav>
+        <main class="main-content">
+            <div class="header">
+                <h1>Inbox</h1>
+                <button class="cta-button">New Message</button>
+            </div>
+            <div class="section-card">
+                <div class="card-header">
+                    <div class="card-title">Recent Conversations</div>
+                </div>
+                <div class="p-8">
+                    <ul class="message-list">
+                        <li class="message-item">
+                            <div class="message-header">
+                                <span><strong>System</strong></span>
+                                <span>Just now</span>
+                            </div>
+                            <div class="message-content">Welcome to BlueCollarClaw! Your account is active.</div>
+                        </li>
+                        <li class="message-item message-empty">
+                            No other messages yet.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

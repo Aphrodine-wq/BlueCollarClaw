@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - BlueCollarClaw</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <a href="index.html" class="brand">
+                <img src="images/logo.svg" alt="BlueCollarClaw" class="brand-logo">
+                BlueCollarClaw
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
+                </a>
+                <a href="contractors.html" class="nav-item">
+                    <i data-lucide="hammer" class="nav-icon"></i> Contractors
+                </a>
+                <a href="jobs.html" class="nav-item">
+                    <i data-lucide="calendar" class="nav-icon"></i> Job Requests
+                </a>
+                <a href="messages.html" class="nav-item">
+                    <i data-lucide="message-square" class="nav-icon"></i> Messages
+                </a>
+                <a href="settings.html" class="nav-item active">
+                    <i data-lucide="settings" class="nav-icon"></i> Settings
+                </a>
+            </div>
+            <div class="nav-footer">
+                <a href="/auth/logout" class="nav-item">
+                    <i data-lucide="log-out" class="nav-icon"></i> Log Out
+                </a>
+            </div>
+        </nav>
+        <main class="main-content">
+            <div class="header">
+                <h1>Account Settings</h1>
+                <button class="cta-button">Save Changes</button>
+            </div>
+
+            <!-- Profile Overview -->
+            <div class="section-card section-padding">
+                <div class="card-header card-header-clean">
+                    <h2 class="card-title">Profile Overview</h2>
+                </div>
+                <div class="profile-flex">
+                    <!-- Avatar Upload Mock -->
+                    <div class="avatar-upload">
+                        <div class="avatar-placeholder">
+                            <i data-lucide="user" class="icon-lg"></i>
+                        </div>
+                        <button class="btn btn-secondary btn-sm w-full">Upload</button>
+                    </div>
+
+                    <form class="settings-form flex-1">
+                        <div class="demo-grid">
+                            <div>
+                                <label class="settings-label">Full Name</label>
+                                <input type="text" class="form-input settings-input" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="settings-label">Email Address</label>
+                                <input type="email" class="form-input settings-input" placeholder="john@example.com">
+                            </div>
+                        </div>
+
+                        <div class="demo-grid">
+                            <div>
+                                <label class="settings-label">Phone Number</label>
+                                <input type="tel" class="form-input settings-input" placeholder="(555) 123-4567">
+                            </div>
+                            <div>
+                                <label class="settings-label">Location</label>
+                                <input type="text" class="form-input settings-input" placeholder="City, State">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label class="settings-label">Bio / Description</label>
+                            <textarea class="form-input settings-input min-h-80"
+                                placeholder="Tell us about yourself or your services..."></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contractor Specifics (Mock Logic: Show if contractor) -->
+            <div class="section-card section-padding mt-4">
+                <div class="card-header card-header-clean">
+                    <h2 class="card-title"><i data-lucide="briefcase" class="nav-icon"></i> Professional Details</h2>
+                </div>
+                <div class="demo-grid">
+                    <div>
+                        <label class="settings-label">Primary Trade</label>
+                        <select class="form-select settings-input" title="Primary Trade">
+                            <option>Plumbing</option>
+                            <option>Electrical</option>
+                            <option>HVAC</option>
+                            <option>General</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="settings-label">Years of Experience</label>
+                        <input type="number" class="form-input settings-input" placeholder="5">
+                    </div>
+                </div>
+                <div>
+                    <label class="settings-label">License Number</label>
+                    <input type="text" class="form-input settings-input" placeholder="LICENSE-12345">
+                </div>
+            </div>
+
+            <!-- Notifications & Security -->
+            <div class="demo-grid mt-4">
+                <div class="section-card section-padding">
+                    <h3 class="card-title title-sm">Notifications</h3>
+                    <div class="toggle active" onclick="this.classList.toggle('active')">
+                        <div class="toggle-switch"></div>
+                        <span>Email Notifications</span>
+                    </div>
+                    <div class="toggle active mt-2" onclick="this.classList.toggle('active')">
+                        <div class="toggle-switch"></div>
+                        <span>SMS Alerts</span>
+                    </div>
+                    <div class="toggle mt-2" onclick="this.classList.toggle('active')">
+                        <div class="toggle-switch"></div>
+                        <span>Marketing Updates</span>
+                    </div>
+                </div>
+
+                <div class="section-card section-padding">
+                    <h3 class="card-title title-sm">Security</h3>
+                    <button class="btn btn-secondary w-full mb-4">Change Password</button>
+                    <button class="btn btn-error w-full">Delete Account</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractors - BlueCollarClaw</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <a href="index.html" class="brand">
+                <img src="images/logo.svg" alt="BlueCollarClaw" class="brand-logo">
+                BlueCollarClaw
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
+                </a>
+                <a href="contractors.html" class="nav-item active">
+                    <i data-lucide="hammer" class="nav-icon"></i> Contractors
+                </a>
+                <a href="jobs.html" class="nav-item">
+                    <i data-lucide="calendar" class="nav-icon"></i> Job Requests
+                </a>
+                <a href="messages.html" class="nav-item">
+                    <i data-lucide="message-square" class="nav-icon"></i> Messages
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings" class="nav-icon"></i> Settings
+                </a>
+            </div>
+            <div class="nav-footer">
+                <a href="/auth/logout" class="nav-item">
+                    <i data-lucide="log-out" class="nav-icon"></i> Log Out
+                </a>
+            </div>
+        </nav>
+        <main class="main-content">
+            <div class="header">
+                <h1>Find Contractors</h1>
+                <button class="cta-button">Filter</button>
+            </div>
+            <div class="section-card">
+                <div class="card-header">
+                    <div class="card-title">Verified Pros</div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Trade</th>
+                                <th>Rating</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractors-list">
+                            <tr>
+                                <td colspan="5" class="text-loading">Loading verified pros...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        fetch('/api/contractors') // This endpoint exists in server.js
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('contractors-list');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-loading">No contractors found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td style="font-weight:600">${c.name}</td>
+                    <td>General Contractor</td> <!-- Placeholder trade -->
+                    <td style="color: gold">★★★★★</td>
+                    <td>N/A</td>
+                    <td><span class="badge badge-success">Available</span></td>
+                </tr>
+            `).join('');
+            })
+            .catch(e => console.error(e));
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
