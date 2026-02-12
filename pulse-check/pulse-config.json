@@ -1,0 +1,31 @@
+{
+  "schedule": "7:00",
+  "timezone": "America/Chicago",
+  "weather_location": "Oxford, MS",
+  "weather_units": "imperial",
+  "sections": {
+    "weather": true,
+    "calendar": true,
+    "github": true,
+    "unreplied": true,
+    "money": true,
+    "projects": true,
+    "priorities": true,
+    "motivation": true
+  },
+  "unreplied_max": 10,
+  "project_tags": [],
+  "priority_contacts": [],
+  "income_sources": [],
+  "expense_tracking": true,
+  "delivery_channel": "telegram",
+  "greeting_style": "motivational",
+  "construction_mode": true,
+  "outdoor_work_alerts": {
+    "rain_threshold_percent": 30,
+    "wind_threshold_mph": 20,
+    "heat_threshold_f": 95,
+    "cold_threshold_f": 32
+  },
+  "github_username": "Aphrodine-Wq"
+}

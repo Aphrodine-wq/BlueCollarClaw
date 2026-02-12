@@ -1,0 +1,40 @@
+{
+  "name": "clawshake",
+  "version": "0.1.0",
+  "description": "Autonomous Contractor Negotiation Protocol - Built on OpenClaw",
+  "main": "index.js",
+  "scripts": {
+    "start": "node easy-setup.js",
+    "setup": "node easy-setup.js",
+    "post": "node post-job.js",
+    "demo": "node demo-local.js",
+    "server": "node server.js",
+    "test": "node test.js",
+    "check": "node diagnostic.js",
+    "pulse": "node pulse-check/pulse.js"
+  },
+  "keywords": [
+    "openclaw",
+    "contractors",
+    "construction",
+    "negotiation",
+    "p2p",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "googleapis": "^144.0.0",
+    "mqtt": "^5.10.1",
+    "nanoid": "^3.3.7",
+    "pdfkit": "^0.15.0",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

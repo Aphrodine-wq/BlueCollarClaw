@@ -1,0 +1,8 @@
+node_modules/
+*.db
+*.log
+contracts/*.pdf
+.env
+.DS_Store
+google-credentials.json
+clawshake.db

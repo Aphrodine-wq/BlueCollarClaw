@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClawShake - Live Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #000000;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            font-size: 48px;
+            line-height: 1;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #6b7280;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #000000;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #ef4444;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            border-color: #ef4444;
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #9ca3af;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .section {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            font-size: 28px;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 14px 20px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            color: #000000;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: #ef4444;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            background: #f3f4f6;
+            color: #000000;
+            border-color: #d1d5db;
+        }
+
+        .filter-btn.active {
+            background: #000000;
+            border-color: #000000;
+            color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6b7280;
+            font-weight: 700;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        tbody tr {
+            background: #ffffff;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+            transform: translateX(4px);
+        }
+
+        tbody td {
+            padding: 20px;
+            border-top: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        tbody td:first-child {
+            border-left: 1px solid #f3f4f6;
+            border-radius: 12px 0 0 12px;
+        }
+
+        tbody td:last-child {
+            border-right: 1px solid #f3f4f6;
+            border-radius: 0 12px 12px 0;
+        }
+
+        code {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            color: #ef4444;
+            background: #fef2f2;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .badge-info {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #f3f4f6;
+            border-top-color: #ef4444;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 32px;
+            color: #9ca3af;
+            font-size: 14px;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 36px;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            tbody td {
+                padding: 16px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-gradient"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <span class="logo">🤝</span>
+                <div>
+                    <h1>ClawShake</h1>
+                    <p class="tagline"><span class="pulse-dot"></span>Live Dashboard</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">👥 Contractors</div>
+                <div class="stat-value" id="totalContractors">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🤝 Total Bookings</div>
+                <div class="stat-value" id="totalBookings">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📋 Active Requests</div>
+                <div class="stat-value" id="activeRequests">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">⭐ Average Rating</div>
+                <div class="stat-value" id="averageRating">—</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-icon">📦</span>Recent Bookings</h2>
+            </div>
+            <div class="search-filters">
+                <button class="filter-btn active" onclick="filterBookings('all')">All</button>
+                <button class="filter-btn" onclick="filterBookings('confirmed')">Confirmed</button>
+                <button class="filter-btn" onclick="filterBookings('completed')">Completed</button>
+            </div>
+            <div id="bookingsContainer">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div style="color: #9ca3af;">Loading bookings...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><span class="section-icon">🎯</span>Active Job Requests</h2>
+            </div>
+            <div class="search-filters">
+                <input type="text" class="search-box" id="requestSearch" placeholder="🔍 Search by trade or location..." oninput="filterRequests()">
+            </div>
+            <div id="requestsContainer">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div style="color: #9ca3af;">Loading requests...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Built with ClawShake | Powered by AI Agents | Refreshes every 10s
+        </div>
+    </div>
+
+    <script>
+        let allBookings = [];
+        let allRequests = [];
+        let currentBookingFilter = 'all';
+
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/analytics');
+                const stats = await res.json();
+
+                document.getElementById('totalContractors').textContent = stats.totalContractors;
+                document.getElementById('totalBookings').textContent = stats.totalBookings;
+                document.getElementById('activeRequests').textContent = stats.activeRequests;
+                document.getElementById('averageRating').textContent = stats.averageRating || '—';
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                const res = await fetch('/api/bookings?limit=50');
+                allBookings = await res.json();
+                renderBookings();
+            } catch (err) {
+                console.error('Error loading bookings:', err);
+            }
+        }
+
+        function filterBookings(status) {
+            currentBookingFilter = status;
+            
+            document.querySelectorAll('.section-header + .search-filters .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderBookings();
+        }
+
+        function renderBookings() {
+            const container = document.getElementById('bookingsContainer');
+            
+            let filtered = allBookings;
+            if (currentBookingFilter !== 'all') {
+                filtered = allBookings.filter(b => b.status === currentBookingFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">📭</div>
+                        <div>No bookings yet. Run the demo to create one!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Trade</th>
+                            <th>Location</th>
+                            <th>Dates</th>
+                            <th>Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(b => `
+                            <tr>
+                                <td><code>${b.id.substr(0, 12)}...</code></td>
+                                <td style="text-transform: capitalize; font-weight: 600;">${b.trade}</td>
+                                <td style="color: #6b7280;">${b.location}</td>
+                                <td style="color: #6b7280;">${new Date(b.start_date).toLocaleDateString()} - ${new Date(b.end_date).toLocaleDateString()}</td>
+                                <td style="font-weight: 700; color: #ef4444;">$${b.rate}/hr</td>
+                                <td><span class="badge badge-success">${b.status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await fetch('/api/requests?status=open&limit=50');
+                allRequests = await res.json();
+                renderRequests();
+            } catch (err) {
+                console.error('Error loading requests:', err);
+            }
+        }
+
+        function filterRequests() {
+            renderRequests();
+        }
+
+        function renderRequests() {
+            const container = document.getElementById('requestsContainer');
+            const searchTerm = document.getElementById('requestSearch').value.toLowerCase();
+            
+            let filtered = allRequests;
+            if (searchTerm) {
+                filtered = allRequests.filter(r => 
+                    r.trade.toLowerCase().includes(searchTerm) ||
+                    r.location.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">🔍</div>
+                        <div>No requests found${searchTerm ? ' for "' + searchTerm + '"' : ''}.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Trade</th>
+                            <th>Location</th>
+                            <th>Rate Range</th>
+                            <th>Start Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(r => `
+                            <tr>
+                                <td><code>${r.id.substr(0, 12)}...</code></td>
+                                <td style="text-transform: capitalize; font-weight: 600;">${r.trade}</td>
+                                <td style="color: #6b7280;">${r.location}</td>
+                                <td style="font-weight: 700; color: #ef4444;">$${r.min_rate}-$${r.max_rate}/hr</td>
+                                <td style="color: #6b7280;">${new Date(r.start_date).toLocaleDateString()}</td>
+                                <td><span class="badge badge-info">${r.status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        loadStats();
+        loadBookings();
+        loadRequests();
+
+        setInterval(() => {
+            loadStats();
+            loadBookings();
+            loadRequests();
+        }, 10000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+#!/usr/bin/env node
+
+const ClawShakeAgent = require('./agent');
+const Database = require('./database');
+const ClawShakeNetwork = require('./network');
+const { nanoid } = require('nanoid');
+const readline = require('readline');
+
+// CLI for setting up and managing ClawShake
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function question(prompt) {
+  return new Promise((resolve) => {
+    rl.question(prompt, resolve);
+  });
+}
+
+async function setup() {
+  console.log('=== ClawShake Setup ===\n');
+
+  const name = await question('Contractor/Company Name: ');
+  const trade = await question('Primary Trade (e.g., plumber, electrician, framer): ');
+  const city = await question('City: ');
+  const state = await question('State (2-letter code): ');
+  const minRate = await question('Minimum acceptable hourly rate ($): ');
+  const preferredRate = await question('Preferred hourly rate ($): ');
+  const maxRate = await question('Maximum hourly rate ($): ');
+
+  console.log('\nGenerating cryptographic keypair...');
+  const { publicKey, privateKey } = ClawShakeNetwork.generateKeypair();
+
+  const contractorId = `contractor_${nanoid()}`;
+
+  const db = new Database();
+  
+  // Create contractor
+  db.createContractor({
+    id: contractorId,
+    name,
+    publicKey,
+    privateKey,
+  }, (err) => {
+    if (err) {
+      console.error('Error creating contractor:', err);
+      process.exit(1);
+    }
+
+    // Add trade
+    db.addTrade(contractorId, trade, (err) => {
+      if (err) {
+        console.error('Error adding trade:', err);
+        process.exit(1);
+      }
+
+      console.log('\n=== Setup Complete ===');
+      console.log(`Contractor ID: ${contractorId}`);
+      console.log(`Name: ${name}`);
+      console.log(`Trade: ${trade}`);
+      console.log(`Location: ${city}, ${state}`);
+      console.log(`Rate Range: $${minRate}-$${maxRate}/hr (preferred: $${preferredRate})`);
+      console.log('\nSave this Contractor ID — you\'ll need it to run the agent.');
+      console.log(`\nTo start listening: node cli.js listen ${contractorId}`);
+      
+      db.close();
+      rl.close();
+    });
+  });
+}
+
+async function listen(contractorId) {
+  console.log(`Starting ClawShake agent for ${contractorId}...`);
+
+  const agent = new ClawShakeAgent(contractorId, {
+    mqttBroker: process.env.MQTT_BROKER || 'mqtt://localhost:1883',
+  });
+
+  try {
+    await agent.initialize();
+    console.log('Agent is now listening for job requests and offers.');
+    console.log('Press Ctrl+C to stop.\n');
+  } catch (err) {
+    console.error('Failed to initialize agent:', err.message);
+    process.exit(1);
+  }
+
+  // Keep process alive
+  process.on('SIGINT', async () => {
+    console.log('\nShutting down...');
+    await agent.shutdown();
+    process.exit(0);
+  });
+}
+
+async function broadcast(contractorId) {
+  console.log('=== Broadcast Job Request ===\n');
+
+  const trade = await question('Trade needed (e.g., plumber, electrician): ');
+  const location = await question('Job location (address or city): ');
+  const startDate = await question('Start date (YYYY-MM-DD): ');
+  const endDate = await question('End date (YYYY-MM-DD): ');
+  const minRate = await question('Minimum rate ($/hr): ');
+  const maxRate = await question('Maximum rate ($/hr): ');
+  const scope = await question('Scope of work: ');
+  const requirements = await question('Requirements (e.g., licensed, insured): ');
+
+  const agent = new ClawShakeAgent(contractorId);
+  
+  try {
+    await agent.initialize();
+
+    const requestId = await agent.broadcastJobRequest({
+      trade,
+      location,
+      startDate,
+      endDate,
+      minRate: parseFloat(minRate),
+      maxRate: parseFloat(maxRate),
+      scope,
+      requirements,
+    });
+
+    console.log(`\nJob request ${requestId} broadcasted!`);
+    console.log('Listening for offers...\n');
+
+    // Keep listening for responses
+    setTimeout(async () => {
+      console.log('\nStopping broadcast listener.');
+      await agent.shutdown();
+      rl.close();
+      process.exit(0);
+    }, 60000); // Listen for 1 minute
+
+  } catch (err) {
+    console.error('Failed to broadcast:', err.message);
+    process.exit(1);
+  }
+}
+
+async function demo() {
+  console.log('=== ClawShake Demo ===\n');
+  console.log('This will simulate a GC finding a plumber.\n');
+
+  const db = new Database();
+
+  // Create GC
+  const gcKeys = ClawShakeNetwork.generateKeypair();
+  const gcId = 'gc_demo_' + nanoid(8);
+  
+  db.createContractor({
+    id: gcId,
+    name: 'Demo General Contractor',
+    publicKey: gcKeys.publicKey,
+    privateKey: gcKeys.privateKey,
+  }, () => {
+    db.addTrade(gcId, 'general_contractor', () => {
+      console.log(`Created GC: ${gcId}`);
+    });
+  });
+
+  // Create Plumber
+  const plumberKeys = ClawShakeNetwork.generateKeypair();
+  const plumberId = 'plumber_demo_' + nanoid(8);
+  
+  db.createContractor({
+    id: plumberId,
+    name: 'Demo Plumbing Co',
+    publicKey: plumberKeys.publicKey,
+    privateKey: plumberKeys.privateKey,
+  }, () => {
+    db.addTrade(plumberId, 'plumber', () => {
+      console.log(`Created Plumber: ${plumberId}`);
+    });
+  });
+
+  setTimeout(async () => {
+    console.log('\n--- Starting Plumber Agent ---');
+    const plumberAgent = new ClawShakeAgent(plumberId);
+    await plumberAgent.initialize();
+
+    setTimeout(async () => {
+      console.log('\n--- GC Broadcasting Job Request ---');
+      const gcAgent = new ClawShakeAgent(gcId);
+      await gcAgent.initialize();
+
+      await gcAgent.broadcastJobRequest({
+        trade: 'plumber',
+        location: '423 Oak St, Austin, TX',
+        startDate: '2026-02-19',
+        endDate: '2026-02-21',
+        minRate: 80,
+        maxRate: 100,
+        scope: 'Rough-in plumbing for residential remodel, 1,200 sqft',
+        requirements: 'licensed, insured',
+      });
+
+      console.log('\nDemo running... Watch for offer/acceptance flow.');
+      console.log('This will auto-shutdown in 30 seconds.\n');
+
+      setTimeout(async () => {
+        await gcAgent.shutdown();
+        await plumberAgent.shutdown();
+        db.close();
+        rl.close();
+        console.log('\nDemo complete!');
+        process.exit(0);
+      }, 30000);
+
+    }, 2000);
+
+  }, 1000);
+}
+
+// Command routing
+const command = process.argv[2];
+
+switch (command) {
+  case 'setup':
+    setup();
+    break;
+  
+  case 'listen':
+    if (!process.argv[3]) {
+      console.error('Usage: node cli.js listen <contractor_id>');
+      process.exit(1);
+    }
+    listen(process.argv[3]);
+    break;
+  
+  case 'broadcast':
+    if (!process.argv[3]) {
+      console.error('Usage: node cli.js broadcast <contractor_id>');
+      process.exit(1);
+    }
+    broadcast(process.argv[3]);
+    break;
+  
+  case 'demo':
+    demo();
+    break;
+  
+  default:
+    console.log('ClawShake CLI\n');
+    console.log('Commands:');
+    console.log('  setup                    - Create a new contractor profile');
+    console.log('  listen <contractor_id>   - Start listening for job requests');
+    console.log('  broadcast <contractor_id> - Broadcast a job request');
+    console.log('  demo                     - Run a simulated booking flow');
+    process.exit(0);
+}
