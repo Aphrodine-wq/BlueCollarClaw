@@ -150,7 +150,7 @@ async function postJob() {
 
   // Create job in database
   console.log();
-  log('  📡 Broadcasting to ClawShake network...', 'yellow');
+  log('  📡 Broadcasting to BlueCollarClaw network...', 'yellow');
 
   const db = new Database();
   await new Promise(resolve => setTimeout(resolve, 200));
@@ -206,7 +206,7 @@ async function postJob() {
 
   // Save request details
   const requestFile = `./job-${requestId}.txt`;
-  fs.writeFileSync(requestFile, `ClawShake Job Request
+  fs.writeFileSync(requestFile, `BlueCollarClaw Job Request
 Created: ${new Date().toISOString()}
 
 JOB ID: ${requestId}

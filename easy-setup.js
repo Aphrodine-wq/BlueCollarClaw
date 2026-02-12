@@ -41,7 +41,7 @@ function header(text) {
 
 async function easySetup() {
   console.clear();
-  header('🤝 CLAWSHAKE - SUPER SIMPLE SETUP');
+  header('🤝 BLUECOLLARCLAW - SUPER SIMPLE SETUP');
 
   log('Get started in 3 minutes. Just answer a few questions.', 'cyan');
   console.log();
@@ -190,7 +190,7 @@ async function easySetup() {
 
   // Generate profile
   console.log();
-  log('  ⚙️  Creating your ClawShake profile...', 'yellow');
+  log('  ⚙️  Creating your BlueCollarClaw profile...', 'yellow');
   await new Promise(resolve => setTimeout(resolve, 500));
 
   const keys = ClawShakeNetwork.generateKeypair();
@@ -255,7 +255,7 @@ async function easySetup() {
   console.log();
   header('✅ YOU\'RE ALL SET!');
 
-  log('Your ClawShake profile:', 'green');
+  log('Your BlueCollarClaw profile:', 'green');
   console.log();
   log(`  👤 Name: ${name}`, 'cyan');
   log(`  🔨 Role: ${isGC ? 'General Contractor' : 'Subcontractor'}`, 'cyan');
@@ -272,7 +272,7 @@ async function easySetup() {
   // Save config
   const configPath = './my-clawshake-config.txt';
   
-  fs.writeFileSync(configPath, `# ClawShake Configuration
+  fs.writeFileSync(configPath, `# BlueCollarClaw Configuration
 # Generated: ${new Date().toISOString()}
 
 CONTRACTOR_ID=${contractorId}
@@ -287,7 +287,7 @@ PREFERRED_RATE=${preferredRate}
 MAX_RATE=${maxRate}
 MESSAGING=${messagingSetup}
 
-# You're ready to use ClawShake!
+# You're ready to use BlueCollarClaw!
 # ${isGC ? 'To post a job: node post-job.js' : 'To find work: Your agent will notify you automatically'}
 `);
 
@@ -325,7 +325,7 @@ MESSAGING=${messagingSetup}
     log('  🤖 Your agent is ready to find work for you!', 'cyan');
     console.log();
     log('  How it works:', 'yellow');
-    log('  1. GCs post jobs on ClawShake', 'cyan');
+    log('  1. GCs post jobs on BlueCollarClaw', 'cyan');
     log('  2. Your AI agent checks if they match', 'cyan');
     log('  3. You get a message on ' + (useWhatsApp ? 'WhatsApp' : 'Telegram'), 'cyan');
     log('  4. Reply to accept or decline', 'cyan');

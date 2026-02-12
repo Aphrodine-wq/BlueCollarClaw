@@ -181,7 +181,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`ClawShake API server running on http://localhost:${port}`);
+  console.log(`BlueCollarClaw API server running on http://localhost:${port}`);
   console.log(`Dashboard: http://localhost:${port}`);
   console.log(`API docs: http://localhost:${port}/api/health`);
 });

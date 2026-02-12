@@ -267,7 +267,7 @@ bot.onText(/\/start/, async (msg) => {
   
   await saveUser(user);
   
-  const welcomeMessage = `👋 Welcome to ClawShake!\n\n` +
+  const welcomeMessage = `👋 Welcome to BlueCollarClaw!\n\n` +
     `I help you find contractors by simply describing what you need.\n\n` +
     `📝 Just send me a message like:\n` +
     `• "I need a plumber to fix my bathroom sink"\n` +
@@ -282,7 +282,7 @@ bot.onText(/\/start/, async (msg) => {
 bot.onText(/\/help/, async (msg) => {
   const chatId = msg.chat.id;
   
-  const helpMessage = `🔧 **ClawShake Bot Help**\n\n` +
+  const helpMessage = `🔧 **BlueCollarClaw Bot Help**\n\n` +
     `📝 **How to post a job:**\n` +
     `Just describe what you need in natural language. Include:\n` +
     `• What trade (plumber, electrician, painter, etc.)\n` +
@@ -312,7 +312,7 @@ bot.on('error', (error) => {
   console.error('Bot error:', error.message);
 });
 
-console.log('🤖 ClawShake Telegram Bot started');
+console.log('🤖 BlueCollarClaw Telegram Bot started');
 console.log('📱 Waiting for messages...');
 
 // Graceful shutdown
