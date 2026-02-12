@@ -41,7 +41,7 @@ body {
 /* Layout */
 .app-container {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 240px 1fr;
   min-height: 100vh;
 }
 
@@ -119,6 +119,15 @@ body {
   padding-top: 2rem;
   border-top: 1px solid var(--border);
   margin-top: auto;
+}
+
+.nav-integration {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  opacity: 0.8;
 }
 
 /* Main Content */
