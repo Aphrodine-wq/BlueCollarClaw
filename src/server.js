@@ -28,7 +28,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-const db = new Database();
+let db;
+if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+  const PostgresDatabase = require('./database-postgres');
+  console.log('Using PostgreSQL Database (Supabase)');
+  db = new PostgresDatabase();
+} else {
+  const Database = require('./database');
+  console.log('Using SQLite Database');
+  db = new Database();
+}
 
 // Auth Routes
 
