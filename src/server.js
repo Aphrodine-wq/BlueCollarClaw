@@ -359,8 +359,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`BlueCollarClaw API server running on http://localhost:${port}`);
-  console.log(`Dashboard: http://localhost:${port}`);
-  console.log(`API docs: http://localhost:${port}/api/health`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`BlueCollarClaw API server running on http://localhost:${port}`);
+    console.log(`Dashboard: http://localhost:${port}`);
+    console.log(`API docs: http://localhost:${port}/api/health`);
+  });
+}
+
+module.exports = app;
