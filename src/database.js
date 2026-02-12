@@ -197,7 +197,16 @@ class Database {
 
   // User methods
   createUser(user, callback) {
-    const { id, email, passwordHash, googleId, discordId, name, role, profileId } = user;
+    // Explicitly destructure to ensure mapped correctly from object
+    const id = user.id;
+    const email = user.email;
+    const passwordHash = user.passwordHash || null;
+    const googleId = user.googleId || null;
+    const discordId = user.discordId || null;
+    const name = user.name;
+    const role = user.role;
+    const profileId = user.profileId || null;
+
     this.db.run(
       `INSERT INTO users (id, email, password_hash, google_id, discord_id, name, role, profile_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, email, passwordHash, googleId, discordId, name, role, profileId],

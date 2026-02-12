@@ -119,6 +119,7 @@ app.get('/auth/logout', (req, res, next) => {
 });
 
 // Demo Login
+// Demo Login
 app.post('/auth/demo', (req, res, next) => {
   const { role } = req.body; // 'homeowner' or 'contractor'
   const email = `demo_${role}@example.com`;
@@ -134,20 +135,24 @@ app.post('/auth/demo', (req, res, next) => {
       });
     } else {
       const crypto = require('crypto');
+      // Create user object matching schema
       const newUser = {
         id: crypto.randomUUID(),
-        email,
-        passwordHash: null,
+        email: email,
+        passwordHash: null, // No password for demo
         googleId: null,
         discordId: null,
-        name,
-        role,
+        name: name,
+        role: role,
         profileId: null
       };
-      db.createUser(newUser, (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        req.logIn(newUser, (err) => {
-          if (err) return res.status(500).json({ error: err.message });
+
+      // Use createUser method from database class
+      db.createUser(newUser, (createErr) => {
+        if (createErr) return res.status(500).json({ error: createErr.message });
+
+        req.logIn(newUser, (loginErr) => {
+          if (loginErr) return res.status(500).json({ error: loginErr.message });
           res.json({ message: 'Demo account created and logged in', user: newUser });
         });
       });
