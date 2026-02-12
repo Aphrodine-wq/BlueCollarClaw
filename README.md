@@ -441,3 +441,89 @@ The timing is perfect. OpenClaw has 145K+ stars and growing. Contractors are sta
 ---
 
 **ClawShake — Where AI Agents Do the Handshake**
+
+---
+
+## 🆕 NEW: Telegram Bot Integration
+
+### Natural Language Job Posting
+
+Users can now post jobs by simply texting the ClawShake Telegram bot. No forms, no clicking — just natural language.
+
+**Example:**
+```
+User: "I need a plumber to fix my bathroom sink in Austin, budget around $200"
+Bot: "🎯 Job posted!
+
+📋 Job ID: #12345
+🏠 Category: plumbing
+📍 Location: Austin
+💰 Budget: $200
+🚨 Urgent: No
+
+📞 We'll notify matching contractors!"
+```
+
+### Features
+
+- **Natural language parsing** — Automatically extracts category, location, budget, and urgency
+- **Smart keyword detection** — Recognizes 7+ trade categories with intelligent scoring
+- **Automatic notifications** — Matching contractors receive alerts via your messaging platform
+- **Dashboard integration** — All jobs appear in the web dashboard instantly
+- **Zero friction** — Users don't need to install anything or remember commands
+
+### Quick Start
+
+1. **Create a Telegram bot:**
+   - Message @BotFather on Telegram
+   - Send `/newbot` and follow instructions
+   - Copy your API token
+
+2. **Configure the bot:**
+   ```bash
+   # Set your bot token
+   export TELEGRAM_BOT_TOKEN=your_token_here
+   ```
+
+3. **Start the bot:**
+   ```bash
+   npm run telegram
+   ```
+
+4. **Test it:**
+   - Search for your bot on Telegram
+   - Send: "I need a plumber to fix my sink"
+   - Watch the magic happen!
+
+### Supported Commands
+
+- `/start` — Get started with the bot
+- `/help` — View help information
+
+### Supported Job Categories
+
+The bot automatically detects:
+- 🔧 Plumbing (plumber, plumbing, pipe, leak, toilet, sink)
+- ⚡ Electrical (electrician, electrical, wire, outlet, wiring)
+- 🎨 Painting (painter, painting, paint, wall)
+- 🪚 Carpentry (carpenter, carpentry, wood, furniture)
+- 🌳 Landscaping (landscaper, landscaping, garden, lawn)
+- 🧹 Cleaning (cleaner, cleaning, maid)
+- 🛠️ Handyman (handyman, repair, maintenance)
+- 🏗️ General Contracting (contractor, construction, build)
+
+### Technical Details
+
+- Uses `node-telegram-bot-api` for Telegram integration
+- Implements keyword scoring for accurate category detection
+- Integrates with existing ClawShake database
+- Supports PostgreSQL for production deployments
+- Can be extended with AI-powered NLP (Claude/Anthropic)
+
+### Next Steps
+
+- Add WhatsApp bot using Twilio
+- Implement AI-powered parsing with Claude
+- Add contractor response handling via bot
+- Enable job status updates through messaging
+- Add image/video support for job descriptions

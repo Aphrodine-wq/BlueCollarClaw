@@ -496,8 +496,15 @@ runner.test('Integration: Full matching flow', async () => {
   
   // Close database properly
   await new Promise(resolve => {
-    db.close();
-    setTimeout(resolve, 100);
+    // Wait a bit for any pending operations
+    setTimeout(() => {
+      try {
+        db.close();
+      } catch (err) {
+        // Database might already be closed
+      }
+      resolve();
+    }, 200);
   });
 });
 
@@ -506,8 +513,8 @@ runner.test('Integration: Full matching flow', async () => {
   try {
     const success = await runner.run();
     
-    // Give databases time to close
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Give all databases time to close properly
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     process.exit(success ? 0 : 1);
   } catch (err) {
