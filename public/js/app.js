@@ -134,99 +134,151 @@ function renderLandingPage(container) {
 }
 
 function renderDashboard(container, user) {
-  // Fetch real stats
+  // Fetch real stats (keep this)
   fetch('/api/analytics')
     .then(res => res.json())
     .then(data => {
-      document.getElementById('total-pros').innerText = data.totalContractors || 0;
-      document.getElementById('active-jobs').innerText = data.activeRequests || 0;
-      document.getElementById('total-bookings').innerText = data.totalBookings || 0;
+      const liveJobs = document.getElementById('live-jobs-val');
+      const networkPros = document.getElementById('network-pros-val');
+      const yourBookings = document.getElementById('your-bookings-val');
+
+      if (liveJobs) liveJobs.innerText = data.activeRequests || 0;
+      if (networkPros) networkPros.innerText = data.totalContractors || 0;
+      if (yourBookings) yourBookings.innerText = data.totalBookings || 0;
     })
     .catch(err => console.error(err));
 
+  const isHomeowner = user.role === 'homeowner';
+
   // Render Layout
   container.innerHTML = `
-    <header class="header animate-fade-in">
-      <div class="header-content">
-        <h1>Dashboard</h1>
-        <p style="color:var(--text-secondary)">Overview for ${user.name} (${user.role})</p>
-      </div>
-      <div class="user-profile">
-        <div class="avatar">${user.name.charAt(0).toUpperCase()}</div>
-        <span>${user.name}</span>
-      </div>
-    </header>
+    <div class="animate-fade-in">
+        <!-- Welcome Banner -->
+        <div class="dashboard-welcome">
+            <div class="welcome-content">
+                <div class="welcome-title">Welcome back, ${user.name.split(' ')[0]}</div>
+                <div class="welcome-subtitle">
+                    ${isHomeowner ? 'Ready to tackle your next home project?' : 'Let\'s find your next big job.'}
+                    <br>BlueCollarClaw agents are standing by.
+                </div>
+            </div>
+        </div>
 
-    <div class="stats-grid animate-fade-in">
-      <div class="stat-card">
-        <div class="stat-label">Network Pros</div>
-        <div class="stat-value" id="total-pros">-</div>
-        <div class="stat-decor">🔨</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Live Jobs</div>
-        <div class="stat-value" id="active-jobs">-</div>
-        <div class="stat-decor">⚡</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Your Bookings</div>
-        <div class="stat-value" id="total-bookings">-</div>
-        <div class="stat-decor">📅</div>
-      </div>
-    </div>
+        <!-- Quick Actions -->
+        <div class="quick-actions-grid">
+             ${isHomeowner ? `
+                <div class="action-card" onclick="document.querySelector('.cta-button')?.click() || (window.location.href='jobs.html')">
+                    <div class="action-icon"><i data-lucide="plus-circle"></i></div>
+                    <div class="action-label">Post a New Job</div>
+                </div>
+                <a href="contractors.html" class="action-card">
+                    <div class="action-icon"><i data-lucide="search"></i></div>
+                    <div class="action-label">Find Contractors</div>
+                </a>
+             ` : `
+                <a href="jobs.html" class="action-card">
+                    <div class="action-icon"><i data-lucide="briefcase"></i></div>
+                    <div class="action-label">Browse Jobs</div>
+                </a>
+                <a href="settings.html" class="action-card">
+                     <div class="action-icon"><i data-lucide="user-check"></i></div>
+                     <div class="action-label">Update Profile</div>
+                </a>
+             `}
+             <a href="messages.html" class="action-card">
+                <div class="action-icon"><i data-lucide="message-square"></i></div>
+                <div class="action-label">Messages</div>
+            </a>
+            <a href="settings.html" class="action-card">
+                <div class="action-icon"><i data-lucide="settings"></i></div>
+                <div class="action-label">Settings</div>
+            </a>
+        </div>
 
-    <div class="section-card animate-fade-in">
-      <div class="card-header">
-        <div class="card-title">Recent Activity</div>
-      </div>
-      <div class="table-responsive">
-        <table id="activity-table">
-          <thead>
-            <tr>
-              <th>Job ID</th>
-              <th>Service</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="5" style="text-align:center; padding: 2rem;">Loading live data...</td></tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="demo-grid" style="grid-template-columns: 2fr 1fr; align-items: start; gap: 2rem;">
+            <!-- Recent Activity Feed -->
+            <div class="section-card" style="margin-bottom:0">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i data-lucide="activity" style="width:20px"></i> Recent Activity
+                    </div>
+                </div>
+                <!-- Replaced Table with Feed -->
+                <div id="activity-feed-container">
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Loading activity...</div>
+                </div>
+            </div>
+
+            <!-- Mini Stats Column -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="stat-card">
+                    <div class="stat-label">Live Jobs</div>
+                    <div class="stat-value" id="live-jobs-val">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Network Pros</div>
+                    <div class="stat-value" id="network-pros-val">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value" id="your-bookings-val">-</div>
+                </div>
+            </div>
+        </div>
     </div>
   `;
 
   // Poll for data
   fetchbookings();
+  lucide.createIcons();
 }
 
 async function fetchbookings() {
   try {
     const res = await fetch('/api/bookings?limit=5');
     const bookings = await res.json();
-    const tbody = document.querySelector('#activity-table tbody');
+    const container = document.getElementById('activity-feed-container');
 
-    if (!tbody) return;
+    if (!container) return;
 
     if (bookings.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No recent bookings.</td></tr>';
+      container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">No recent activity found. Post a job to get started!</div>';
       return;
     }
 
-    tbody.innerHTML = bookings.map(b => `
-      <tr>
-        <td style="font-family:monospace; color:var(--text-secondary)">#${b.id.substring(0, 6)}</td>
-        <td style="color:var(--text-primary); font-weight:500">${b.trade}</td>
-        <td>${b.location}</td>
-        <td><span class="badge ${getStatusBadge(b.status)}">${b.status}</span></td>
-        <td style="color:var(--success); font-weight:600">$${b.rate}/hr</td>
-      </tr>
+    container.className = 'activity-feed'; // Apply feed style wrapper
+    container.style.border = 'none'; // distinct from card
+    container.style.boxShadow = 'none';
+
+    container.innerHTML = bookings.map(b => `
+      <div class="activity-item">
+        <div class="activity-meta">
+            <div class="activity-icon">
+                <i data-lucide="${getIconForTrade(b.trade)}"></i>
+            </div>
+            <div class="activity-details">
+                <h4>${b.trade} Service</h4>
+                <span>${b.location} • <span class="badge ${getStatusBadge(b.status)}" style="padding: 0.1rem 0.5rem; font-size: 0.7rem;">${b.status}</span></span>
+            </div>
+        </div>
+        <div class="activity-value">$${b.rate}/hr</div>
+      </div>
     `).join('');
+
+    lucide.createIcons();
+
   } catch (e) {
     console.error(e);
   }
+}
+
+function getIconForTrade(trade) {
+  const t = (trade || '').toLowerCase();
+  if (t.includes('plumb')) return 'droplet';
+  if (t.includes('electr')) return 'zap';
+  if (t.includes('hvac')) return 'thermometer';
+  if (t.includes('carpen')) return 'hammer';
+  return 'wrench';
 }
 
 function getStatusBadge(status) {
