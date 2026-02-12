@@ -48,85 +48,59 @@ async function checkAuth() {
 }
 
 function renderLandingPage(container) {
-
   container.innerHTML = `
-    <div class="hero animate-fade-in" style="background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%); padding: 6rem 2rem; text-align: center;">
-      <div style="max-width: 800px; margin: 0 auto;">
-          <h1 style="font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; background: linear-gradient(to right, var(--text-primary), var(--accent-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Your Home Projects.<br>Handled on Autopilot.</h1>
-          <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Stop chasing contractors. BlueCollarClaw's AI agents negotiate, schedule, and verify top-rated pros for you. 24/7.
-          </p>
-          <div class="cta-group" style="display: flex; gap: 1rem; justify-content: center;">
-            <a href="login.html" class="cta-button" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Get Started Free</a>
-            <a href="#how-it-works" class="cta-button btn-secondary" style="padding: 1rem 2.5rem; font-size: 1.1rem; background: var(--bg-tertiary); color: var(--text-primary);">See How It Works</a>
-          </div>
-      </div>
-    </div>
-
-    <div class="features-section animate-fade-in animation-delay-100" style="padding: 6rem 2rem; max-width: 1200px; margin: 0 auto;">
-      <div style="text-align: center; margin-bottom: 4rem;">
-        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Why Homeowners Trust Us</h2>
-        <p style="color: var(--text-secondary);">We've reimagined home services for the AI era.</p>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
-        <div class="feature-card" style="padding: 2.5rem; background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s;">
-            <div style="width: 56px; height: 56px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="zap" style="width: 28px; height: 28px; color: var(--accent-primary);"></i>
-            </div>
-            <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem;">Instant AI Matching</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6;">Skip the phone tag. Our AI analyzes your job and instantly dispatches it to the perfect pro in seconds, not days.</p>
-        </div>
-        <div class="feature-card" style="padding: 2.5rem; background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s;">
-             <div style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="shield-check" style="width: 28px; height: 28px; color: var(--success);"></i>
-            </div>
-            <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem;">Verified & Vetted</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6;">Every professional is rigorously vetted for license, insurance, and past performance. If they aren't 5-star, they aren't here.</p>
-        </div>
-        <div class="feature-card" style="padding: 2.5rem; background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--border-color); transition: transform 0.2s;">
-             <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center;">
-                 <i data-lucide="wallet" style="width: 28px; height: 28px; color: var(--warning);"></i>
-            </div>
-            <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem;">Price Protection</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6;">Get guaranteed upfront quotes. Funds are held in escrow and only released when you're 100% satisfied.</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="how-it-works" class="steps-section" style="background: var(--bg-tertiary); padding: 6rem 2rem; border-top: 1px solid var(--border-color);">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="text-align: center; margin-bottom: 5rem;">
-                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">How It Works</h2>
-                <p style="color: var(--text-secondary);">From to-do list to done in three steps.</p>
-            </div>
-
-             <div style="display: flex; flex-wrap: wrap; gap: 4rem; justify-content: center; position: relative;">
-                <div style="flex: 1; min-width: 280px; text-align: center; position: relative; z-index: 1;">
-                    <div style="font-size: 5rem; font-weight: 900; color: var(--accent-primary); opacity: 0.1; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); z-index: -1;">01</div>
-                    <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 2px solid var(--border-color);">
-                        <i data-lucide="message-square-plus" style="width: 32px; height: 32px; color: var(--text-primary);"></i>
-                    </div>
-                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Post Your Job</h3>
-                    <p style="color: var(--text-secondary);">Describe what you need. Snap a photo. Our AI handles the details.</p>
+    <div class="animate-fade-in">
+        <!-- Hero Section -->
+        <div class="hero-wrapper">
+             <div class="hero">
+                <h1>Your Home Projects.<br><span>Handled on Autopilot.</span></h1>
+                <p>
+                    Stop chasing contractors. BlueCollarClaw's AI agents negotiate, schedule, and verify top-rated pros for you. 24/7.
+                </p>
+                <div class="cta-group">
+                    <a href="login.html" class="cta-button">
+                        Get Started Free <i data-lucide="arrow-right" style="width:18px"></i>
+                    </a>
+                    <a href="#how-it-works" class="cta-button secondary">
+                        See How It Works
+                    </a>
                 </div>
-                <div style="flex: 1; min-width: 280px; text-align: center; position: relative; z-index: 1;">
-                     <div style="font-size: 5rem; font-weight: 900; color: var(--accent-primary); opacity: 0.1; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); z-index: -1;">02</div>
-                     <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 2px solid var(--border-color);">
-                        <i data-lucide="cpu" style="width: 32px; height: 32px; color: var(--text-primary);"></i>
-                    </div>
-                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">AI Matching</h3>
-                    <p style="color: var(--text-secondary);">We instantly notify the best-rated pros in your area who are available now.</p>
+            </div>
+        </div>
+
+        <!-- Trust Signals -->
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <p style="text-transform: uppercase; font-size: 0.75rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 1.5rem;">Trusted Technology</p>
+            <div style="display: flex; gap: 3rem; justify-content: center; opacity: 0.5; filter: grayscale(1);">
+                <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield"></i> OpenClaw</div>
+                <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="cpu"></i> AI-Native</div>
+                <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle"></i> Verified</div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" style="text-align: left; padding: 2rem;">
+                <div style="width: 48px; height: 48px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); margin-bottom: 1.5rem;">
+                    <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
                 </div>
-                <div style="flex: 1; min-width: 280px; text-align: center; position: relative; z-index: 1;">
-                     <div style="font-size: 5rem; font-weight: 900; color: var(--accent-primary); opacity: 0.1; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); z-index: -1;">03</div>
-                     <div style="width: 80px; height: 80px; background: var(--bg-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 2px solid var(--border-color);">
-                        <i data-lucide="check-circle-2" style="width: 32px; height: 32px; color: var(--text-primary);"></i>
-                    </div>
-                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Job Done</h3>
-                    <p style="color: var(--text-secondary);">Review quotes, hire with a click, and pay only when you're happy.</p>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Instant AI Matching</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6;">Skip the phone tag. Our AI analyzes your job and instantly dispatches it to the perfect pro.</p>
+            </div>
+            <div class="stat-card" style="text-align: left; padding: 2rem;">
+                 <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--success); margin-bottom: 1.5rem;">
+                    <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
                 </div>
-             </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Verified & Vetted</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6;">Every professional is rigorously vetted for license and insurance. 5-star quality guaranteed.</p>
+            </div>
+            <div class="stat-card" style="text-align: left; padding: 2rem;">
+                 <div style="width: 48px; height: 48px; background: rgba(217, 119, 6, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--warning); margin-bottom: 1.5rem;">
+                    <i data-lucide="wallet" style="width: 24px; height: 24px;"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">Price Protection</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6;">Get guaranteed upfront quotes. Funds are held in escrow and only released when you're happy.</p>
+            </div>
         </div>
     </div>
   `;
