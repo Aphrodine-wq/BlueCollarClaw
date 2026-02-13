@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - BlueCollarClaw</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .pricing-card {
+            background: var(--card-bg, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2.5rem;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .pricing-card.featured {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08));
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1rem 0;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .pricing-desc {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+        }
+
+        .pricing-features li {
+            padding: 0.6rem 0;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .pricing-features li .check {
+            color: #22c55e;
+            flex-shrink: 0;
+        }
+
+        .pricing-features li .cross {
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .pricing-cta {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        .pricing-cta:hover {
+            opacity: 0.9;
+        }
+
+        .pricing-cta.primary {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+        }
+
+        .pricing-cta.secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fee-comparison {
+            max-width: 700px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+
+        .fee-comparison h2 {
+            margin-bottom: 1rem;
+        }
+
+        .fee-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .fee-table th,
+        .fee-table td {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .fee-table th {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .fee-highlight {
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <a href="index.html" class="brand">
+                <img src="images/logo.svg" alt="BlueCollarClaw" class="brand-logo">
+                BlueCollarClaw
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
+                </a>
+                <a href="contractors.html" class="nav-item">
+                    <i data-lucide="hammer" class="nav-icon"></i> Contractors
+                </a>
+                <a href="jobs.html" class="nav-item">
+                    <i data-lucide="calendar" class="nav-icon"></i> Job Requests
+                </a>
+                <a href="messages.html" class="nav-item">
+                    <i data-lucide="message-square" class="nav-icon"></i> Messages
+                </a>
+            </div>
+            <div class="nav-footer">
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings" class="nav-icon"></i> Settings
+                </a>
+                <a href="/auth/logout" class="nav-item">
+                    <i data-lucide="log-out" class="nav-icon"></i> Log Out
+                </a>
+                <div class="nav-integration">
+                    AI-Powered Contractor Network
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="header" style="text-align: center; padding: 2rem 0;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Simple, Transparent Pricing</h1>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Start free. Upgrade when you're ready to grow.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-price">$0<span>/month</span></div>
+                    <div class="pricing-desc">Perfect for getting started and testing the waters.</div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> 3 active job postings</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> 10 offers per month</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> AI-powered matching</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> Web dashboard access</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> Telegram bot integration</li>
+                        <li><i data-lucide="x" class="cross" style="width:18px; height:18px;"></i> <span style="color: #475569;">Priority matching</span></li>
+                        <li><i data-lucide="x" class="cross" style="width:18px; height:18px;"></i> <span style="color: #475569;">Advanced analytics</span></li>
+                    </ul>
+                    <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; margin-bottom: 1rem;">8% platform fee per booking</div>
+                    <button class="pricing-cta secondary" onclick="window.location.href='/login.html'">Get Started Free</button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="pricing-card featured">
+                    <div class="pricing-name">Pro</div>
+                    <div class="pricing-price">$29<span>/month</span></div>
+                    <div class="pricing-desc">For serious contractors who want every advantage.</div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> <strong>Unlimited</strong> job postings</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> <strong>Unlimited</strong> offers</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> AI-powered matching</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> Web dashboard access</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> All messaging integrations</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> <strong>Priority matching</strong> (your offers seen first)</li>
+                        <li><i data-lucide="check" class="check" style="width:18px; height:18px;"></i> <strong>Full analytics</strong> dashboard</li>
+                    </ul>
+                    <div style="text-align: center; color: #22c55e; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600;">Only 3% platform fee per booking</div>
+                    <button class="pricing-cta primary" onclick="upgradeToPro()">Upgrade to Pro</button>
+                </div>
+            </div>
+
+            <!-- Fee comparison -->
+            <div class="fee-comparison">
+                <h2>Platform Fee Comparison</h2>
+                <p style="color: #94a3b8;">Pro pays for itself after just a few bookings.</p>
+                <table class="fee-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Value</th>
+                            <th>Free (8%)</th>
+                            <th>Pro (3%)</th>
+                            <th>You Save</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>$500 job</td>
+                            <td>$40</td>
+                            <td>$15</td>
+                            <td class="fee-highlight">$25</td>
+                        </tr>
+                        <tr>
+                            <td>$1,000 job</td>
+                            <td>$80</td>
+                            <td>$30</td>
+                            <td class="fee-highlight">$50</td>
+                        </tr>
+                        <tr>
+                            <td>$5,000 job</td>
+                            <td>$400</td>
+                            <td>$150</td>
+                            <td class="fee-highlight">$250</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        async function upgradeToPro() {
+            const res = await fetch('/api/billing/create-checkout', { method: 'POST' });
+            if (res.status === 401) {
+                window.location.href = '/login.html';
+                return;
+            }
+            const data = await res.json();
+            if (data.url) window.location.href = data.url;
+            else alert(data.error || 'Could not start checkout. Please log in first.');
+        }
+    </script>
+</body>
+
+</html>

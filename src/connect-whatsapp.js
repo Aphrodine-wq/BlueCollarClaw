@@ -35,22 +35,7 @@ if (!contractorId) {
 log('  🔗 Setting up WhatsApp notifications...', 'cyan');
 console.log();
 
-log('  OPTION 1: Use OpenClaw (Recommended)', 'bright');
-console.log();
-log('  1. Make sure OpenClaw is installed:', 'cyan');
-log('     npm install -g openclaw', 'yellow');
-console.log();
-log('  2. Configure WhatsApp channel:', 'cyan');
-log('     openclaw channel add whatsapp', 'yellow');
-console.log();
-log('  3. Scan QR code with your phone', 'cyan');
-console.log();
-log('  4. Update config with your phone number:', 'cyan');
-log('     Add to my-BlueCollarClaw-config.txt:', 'yellow');
-log('     WHATSAPP_NUMBER=+1234567890', 'yellow');
-console.log();
-
-log('  OPTION 2: Use WhatsApp Business API', 'bright');
+log('  OPTION 1: Use WhatsApp Business API (Recommended)', 'bright');
 console.log();
 log('  1. Create a business account:', 'cyan');
 log('     https://business.whatsapp.com/', 'yellow');

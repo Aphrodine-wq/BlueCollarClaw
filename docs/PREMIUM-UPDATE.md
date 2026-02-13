@@ -106,36 +106,34 @@ Parser scores 0-100 based on:
 
 ## 📱 Integration Points
 
-### OpenClaw
+### Standalone Deployment
 
-Add to OpenClaw config:
-```json
-{
-  "messageRouting": {
-    "BlueCollarClaw": {
-      "handler": "/path/to/message-handler.js",
-      "triggers": ["i need", "find me", "/post"]
-    }
-  }
-}
-```
-
-Users text via WhatsApp/Telegram through OpenClaw.
-
-### Telegram Bot
+Users can text via Telegram or WhatsApp directly:
 
 ```bash
-# User creates bot via @BotFather
-# Gets token: 123456:ABCdef...
+# For Telegram
+node telegram-bot-server.js
+
+# For WhatsApp (via Twilio)
+node whatsapp-bot.js
+```
+
+Both bots use the same `message-handler.js` for natural language processing.
+
+### Telegram Bot (Simple Setup)
+
+```bash
+# Create bot via @BotFather on Telegram
+# Get token: 123456:ABCdef...
 
 # Add to .env:
 TELEGRAM_BOT_TOKEN=your_token
 
 # Run bot server:
 node telegram-bot-server.js
-```
 
-Users text the bot directly.
+# Users text the bot and posts happen instantly
+```
 
 ---
 
@@ -309,9 +307,9 @@ And automatically:
 - Multi-turn conversations
 
 ### Integration: ⚠️ NEEDS SETUP
-- OpenClaw routing (docs ready)
+- Telegram Bot (docs ready)
 - Telegram bot (code ready)
-- WhatsApp (via OpenClaw)
+- WhatsApp (via Twilio API)
 
 **Next:** Set up one messaging channel and test with real users.
 
@@ -344,7 +342,7 @@ And automatically:
 
 **Natural Language:** Works for 90% of cases, 10x easier than forms
 
-**Integration:** Ready for OpenClaw or Telegram bot
+**Integration:** Ready for Telegram bot
 
 **User Experience:** From 3 minutes (form) to 10 seconds (text)
 

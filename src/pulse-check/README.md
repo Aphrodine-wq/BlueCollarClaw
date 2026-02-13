@@ -2,7 +2,7 @@
 
 **One message. Everything you need. Nothing you don't.**
 
-A daily briefing skill for OpenClaw that compiles weather, calendar, unreplied messages, finances, project status, and AI-prioritized tasks into a single morning message.
+A daily briefing module for BlueCollarClaw that compiles weather, calendar, unreplied messages, finances, project status, and AI-prioritized tasks into a single morning message.
 
 ## Quick Start
 
@@ -43,12 +43,12 @@ Edit `pulse-config.json`:
 
 ## How It Works
 
-Pulse Check is a SKILL.md that teaches your OpenClaw agent how to compile briefings. The `pulse.js` script handles weather (the only external API call). Everything else — calendar, messages, finances, projects, priorities — is synthesized by your LLM using OpenClaw's existing tool access.
+Pulse Check uses the `pulse.js` script to handle weather (the only external API call). Everything else — calendar, messages, finances, projects, priorities — is synthesized by the AI using BlueCollarClaw's database and connected services.
 
 This means:
 - **No data leaves your machine** (except the weather API call)
 - **It gets smarter over time** as it learns your patterns
-- **It works with whatever you have connected** — no extra setup beyond what OpenClaw already has
+- **It works with whatever you have connected** — Telegram, Email, SMS, or the web dashboard
 
 ## Construction Mode
 
@@ -63,7 +63,7 @@ When `construction_mode: true`, Pulse Check adds:
 
 ```
 pulse-check/
-├── SKILL.md           # OpenClaw skill definition
+├── SKILL.md           # Skill definition
 ├── pulse-config.json  # Your personal config
 ├── pulse.js           # Main script
 └── README.md          # This file

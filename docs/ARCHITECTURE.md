@@ -2,26 +2,26 @@
 
 ## System Overview
 
-BlueCollarClaw is a decentralized protocol for autonomous contractor negotiation. It combines:
+BlueCollarClaw is a decentralized, standalone platform for autonomous contractor negotiation. It combines:
 
-- **Peer-to-peer messaging** (MQTT → eventually libp2p)
+- **Peer-to-peer messaging** (MQTT, Telegram bots, WhatsApp bots → eventually libp2p)
 - **AI-powered matching and negotiation** (local decision engines)
 - **Cryptographic identity and trust** (RSA signatures, reputation ledger)
 - **Smart contract generation** (automated PDF agreements)
-- **Calendar and payment integration** (external APIs)
+- **Calendar and payment integration** (Google Calendar, Stripe)
 
 ## Architecture Layers
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     User Interface Layer                     │
-│  (OpenClaw Chat, WhatsApp, Telegram, Discord, Web Dashboard) │
+│  (Telegram Bot, WhatsApp, Discord, Web Dashboard, CLI)       │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    BlueCollarClaw Agent Layer                     │
-│          (Orchestrates all protocol interactions)            │
+│                   BlueCollarClaw Core Layer                      │
+│          (Orchestrates all platform interactions)            │
 └─────────────────────────────────────────────────────────────┘
                               │
         ┌─────────────────────┼─────────────────────┐
@@ -73,9 +73,9 @@ Each contractor has a **cryptographic keypair** (RSA-2048):
 
 ### 2. Network Layer
 
-#### MQTT (Current Implementation)
+#### Messaging Options
 
-**Topic Structure:**
+**MQTT (Scalable Network Mode):**
 ```
 BlueCollarClaw/{region}/{trade}          # Broadcast requests
 BlueCollarClaw/offers/{contractor_id}    # Personal offer channel
@@ -84,6 +84,16 @@ BlueCollarClaw/accepts/{contractor_id}   # Acceptances
 BlueCollarClaw/declines/{contractor_id}  # Declines
 BlueCollarClaw/confirmations/{contractor_id} # Final confirmations
 ```
+
+**Telegram Bot (Simple, No Setup):**
+- Users text bot directly
+- Bot parses natural language
+- Sends confirmations and notifications via Telegram
+
+**WhatsApp (via Twilio):**
+- Users text WhatsApp bot
+- Twilio API integration
+- SMS fallback for non-WhatsApp users
 
 **Message Flow:**
 ```
@@ -103,7 +113,7 @@ GC Agent                                    Sub Agent
     │                                           │
 ```
 
-#### Future: libp2p (P2P)
+#### Long-Term: libp2p (True P2P)
 
 **Benefits:**
 - No central broker (fully decentralized)
@@ -117,10 +127,11 @@ GC Agent                                    Sub Agent
 - Requires DHT for contractor lookup
 
 **Migration Path:**
-1. Start with MQTT (simple, fast)
-2. Add federated hubs (regional brokers)
-3. Implement libp2p alongside MQTT (dual-mode)
-4. Gradually migrate to P2P as primary
+1. Start with Telegram/WhatsApp bots (zero infra)
+2. Add MQTT for power users (HiveMQ Cloud)
+3. Add federated hubs (regional brokers)
+4. Implement libp2p alongside MQTT (dual-mode)
+5. Gradually migrate to P2P as primary
 
 ### 3. Message Protocol
 
@@ -435,8 +446,9 @@ Generated with PDFKit. Includes:
 
 #### Storage
 
-- Local: `./contracts/contract_{booking_id}.pdf`
-- Future: Upload to S3/Cloudflare R2, serve via CDN
+- **Development:** Local `./contracts/` directory
+- **Production:** S3/Cloudflare R2 with CDN delivery
+- **Backup:** Store contract hashes on-chain (optional)
 
 #### Legal Validity
 
@@ -485,9 +497,9 @@ const event = {
 - Apple Calendar (CalDAV)
 - Simple in-memory fallback (no external dependency)
 
-### 9. Payment Integration (Phase 7)
+### 9. Payment Integration (Phase 3+)
 
-#### Stripe Connect
+#### Stripe Connect (Primary)
 
 **Flow:**
 1. Both GC and Sub onboard via Stripe Connect
@@ -496,14 +508,16 @@ const event = {
 4. On job completion (both parties confirm), release to Sub
 5. BlueCollarClaw takes 2.5% transaction fee
 
-**Instant Pay:**
-- Sub can request instant payout (1-2% fee)
-- Default: net-30 (no fee)
+**Features:**
+- Instant pay option (1-2% fee)
+- Net-30 default (no fee)
+- Automated invoicing
+- Dispute resolution
 
-**Dispute Resolution:**
-- If one party disputes completion, hold funds
-- Manual review by BlueCollarClaw team
-- Resolve within 7 days
+**Alternatives:**
+- PayPal Commerce (easier setup)
+- ACH transfers (lower fees)
+- Cryptocurrency (future)
 
 ### 10. Scalability
 
@@ -527,6 +541,16 @@ const event = {
 
 #### Infrastructure (Production)
 
+**Minimal Setup (Start Here):**
+```
+Telegram Bot Server (Vercel/Railway)
+        │
+        ├─> PostgreSQL (PlanetScale)
+        ├─> Redis (Upstash)
+        └─> S3 (AWS/Cloudflare R2)
+```
+
+**Scaled Setup:**
 ```
 Load Balancer (Cloudflare)
         │
@@ -535,8 +559,9 @@ API Servers (3+ instances, Node.js)
         │
         ├─> PostgreSQL (primary + read replicas)
         ├─> Redis (caching + job queue)
-        ├─> MQTT Cluster (EMQX or Mosquitto cluster)
-        └─> S3 (contract storage)
+        ├─> MQTT Cluster (EMQX or Mosquitto)
+        ├─> Telegram Bot Webhooks
+        └─> S3/R2 (contract storage)
 ```
 
 ---

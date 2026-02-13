@@ -54,7 +54,7 @@ node pulse-check/pulse.js
 ✅ No rain in forecast today.
 🌅 Sunrise 6:42 AM / Sunset 5:38 PM
 
-📅 [Calendar events from OpenClaw]
+📅 [Calendar events]
 
 🤝 BlueCollarClaw UPDATE
 📦 JOBS TODAY (2)
@@ -105,29 +105,38 @@ node pulse-check/pulse.js --dry-run
 
 ---
 
-## ⚙️ Schedule It (Coming Soon)
+## ⚙️ Schedule It with System Cron
 
-**With OpenClaw Cron:**
+**Linux/Mac (with crontab):**
 ```bash
-# Add to OpenClaw config
-{
-  "cron": [{
-    "name": "Daily Pulse",
-    "schedule": "0 6 30 * * *",
-    "command": "node /path/to/BlueCollarClaw/pulse-check/pulse.js",
-    "channel": "telegram"
-  }]
-}
+# Add to crontab
+crontab -e
+
+# Daily at 6:30 AM
+30 6 * * * cd /path/to/BlueCollarClaw && npm run pulse
 ```
 
-**Standalone (with cron):**
-```bash
-# Linux/Mac
-30 6 * * * cd /path/to/BlueCollarClaw && node pulse-check/pulse.js
+**Windows (Task Scheduler):**
+```
+Trigger: Daily at 6:30 AM
+Action: Start a program
+Program: node
+Arguments: C:\Users\Walt\Desktop\BlueCollarClaw\pulse-check\pulse.js
+```
 
-# Windows Task Scheduler
-# Trigger: Daily at 6:30 AM
-# Action: node C:\Users\Walt\Desktop\BlueCollarClaw\pulse-check\pulse.js
+**Docker/Server (systemd):**
+```ini
+[Unit]
+Description=BlueCollarClaw Pulse Check
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node /app/pulse-check/pulse.js
+User=app
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 ---

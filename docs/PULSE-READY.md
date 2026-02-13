@@ -106,20 +106,20 @@ node pulse-check/pulse.js --dry-run
 
 ---
 
-## ⚙️ Manage Cron Job
+## ⚙️ Run Pulse Check Manually
 
 ```bash
-# List all cron jobs
-openclaw cron list
+# Run the full pulse check now
+npm run pulse
 
-# Run now (test it)
-openclaw cron run "Daily Pulse Check - 7 AM"
+# Run just GitHub analysis
+node pulse-check/pulse.js --section github
 
-# Disable
-openclaw cron disable "Daily Pulse Check - 7 AM"
+# Run just BlueCollarClaw data
+node pulse-check/pulse.js --section BlueCollarClaw
 
-# Enable
-openclaw cron enable "Daily Pulse Check - 7 AM"
+# Preview without sending
+node pulse-check/pulse.js --dry-run
 ```
 
 ---
@@ -154,7 +154,7 @@ Edit `pulse-check/pulse-config.json`:
 **7:00 AM - Your phone buzzes:**
 
 ```
-New message from OpenClaw:
+New message from BlueCollarClaw:
 
 ── PULSE CHECK ── [Full briefing] ──
 ```

@@ -143,7 +143,7 @@ class BlueCollarClawAgent {
 
       case 'SUGGEST':
       case 'NOTIFY':
-        // Notify human (in real implementation, send to OpenClaw chat)
+        // Notify human (via dashboard, Telegram, email, or SMS)
         console.log(`[HUMAN REVIEW NEEDED] Request ${request.id}:`, {
           trade: request.trade,
           location: request.location,

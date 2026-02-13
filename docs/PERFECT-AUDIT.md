@@ -34,7 +34,7 @@
 - ✅ pulse-check/github-module.js - Repo analysis
 - ✅ pulse-check/motivation-module.js - Daily motivation
 - ✅ pulse-check/BlueCollarClaw-integration.js - Business data
-- ✅ pulse-config.json - GitHub username: **Aphrodine-Wq** ✓
+- ✅ pulse-config.json - GitHub username configured ✓
 
 ---
 
@@ -189,7 +189,7 @@ npm test
 5. **Setup wizards** - Dead simple onboarding
 
 ### ⏳ Needs Setup (Not Code Issues)
-1. **Messaging integration** - Requires OpenClaw or Telegram bot token
+1. **Messaging integration** - Requires Telegram bot token (or Email/SMS config)
 2. **MQTT broker** - For network mode (HiveMQ Cloud free tier)
 3. **Weather API** - OpenWeather API key (free)
 4. **Deployment** - Vercel/Railway for dashboard hosting

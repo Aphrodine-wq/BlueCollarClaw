@@ -202,16 +202,16 @@ node post-job.js
 - ⚠️ Bot server code needed (future)
 
 ### WhatsApp (Partial)
-- ✅ OpenClaw method documented
 - ✅ Business API method documented
-- ⚠️ Requires OpenClaw install
-- ⚠️ QR code scanning required
+- ✅ QR code integration with Twilio
+- ⚠️ Requires Twilio WhatsApp Business API account
+- ⚠️ QR code scanning for WhatsApp Web integration
 
 ### Implementation Status
 - ✅ Setup flow requires choice
 - ✅ Config saves messaging preference
 - ✅ Documentation complete
-- ⚠️ Actual notification sending (needs integration with OpenClaw or bot server)
+- ⚠️ Actual notification sending (needs integration with Telegram bot or Twilio API)
 
 ---
 
@@ -219,24 +219,20 @@ node post-job.js
 
 ### To Make Notifications Actually Work:
 
-**Option 1: OpenClaw Integration**
-```bash
-# User installs OpenClaw
-npm install -g openclaw
-
-# Links WhatsApp
-openclaw channel add whatsapp
-
-# BlueCollarClaw sends messages via OpenClaw API
-```
-
-**Option 2: Telegram Bot**
+**Option 1: Telegram Bot Server**
 ```bash
 # Create bot server
 node telegram-bot.js
 
 # Users connect via /start
 # BlueCollarClaw sends messages via bot API
+```
+
+**Option 2: Twilio WhatsApp**
+```bash
+# Use Twilio API for WhatsApp integration
+# Setup Twilio account with WhatsApp Business Profile
+# BlueCollarClaw sends messages via Twilio API
 ```
 
 **Option 3: Twilio SMS**

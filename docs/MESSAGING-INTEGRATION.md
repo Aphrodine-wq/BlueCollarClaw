@@ -37,43 +37,46 @@ Reply "accept" to book or "counter $85" to negotiate.
 
 ---
 
-## 🔧 Setup with OpenClaw
+## 🔧 Standalone Setup
 
-### 1. Install OpenClaw
-
-```bash
-npm install -g openclaw
-```
-
-### 2. Start OpenClaw Gateway
+### 1. For Telegram Bot
 
 ```bash
-openclaw gateway start
+# Create bot via @BotFather
+# Get your API token
+
+# Add to .env
+TELEGRAM_BOT_TOKEN=your_token_here
+DATABASE_PATH=./BlueCollarClaw.db
+
+# Start bot server
+node telegram-bot-server.js
 ```
 
-### 3. Add Messaging Channel
+### 2. For WhatsApp (via Twilio)
 
-**Option A: WhatsApp**
 ```bash
-openclaw channel add whatsapp
-# Scan QR code with phone
+# Create Twilio account
+# Get WhatsApp sandbox credentials
+
+# Add to .env
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Start WhatsApp bot
+node whatsapp-bot.js
 ```
 
-**Option B: Telegram**
-```bash
-openclaw channel add telegram
-# Follow setup prompts
-```
+### 3. Message Routing Configuration
 
-### 4. Configure BlueCollarClaw Handler
-
-Add to OpenClaw config (`~/.openclaw/gateway.json`):
+Create `message-config.json`:
 
 ```json
 {
   "messageRouting": {
     "BlueCollarClaw": {
-      "handler": "/path/to/BlueCollarClaw/message-handler.js",
+      "handler": "./message-handler.js",
       "triggers": [
         "i need",
         "find me",
@@ -86,9 +89,9 @@ Add to OpenClaw config (`~/.openclaw/gateway.json`):
 }
 ```
 
-### 5. Test It
+### 4. Test It
 
-Send a message via WhatsApp/Telegram:
+Send a message via Telegram or WhatsApp:
 ```
 "I need an electrician tomorrow for $90/hr"
 ```
@@ -97,36 +100,37 @@ You should get a confirmation response.
 
 ---
 
-## 🤖 Setup Standalone Telegram Bot
+## 🤖 Telegram Bot Setup
 
-### 1. Create Bot
+### 1. Create Bot with @BotFather
 
 1. Open Telegram
-2. Message `@BotFather`
+2. Search for `@BotFather`
 3. Send `/newbot`
-4. Name it: `BlueCollarClawBot` (or your choice)
-5. Get your token: `123456:ABCdef...`
+4. Follow instructions to name your bot
+5. Get your API token: `123456:ABCdef...`
 
-### 2. Configure Bot
+### 2. Configure BlueCollarClaw
 
-Create `.env` file:
+Create or edit `.env`:
 ```
 TELEGRAM_BOT_TOKEN=your_token_here
 DATABASE_PATH=./BlueCollarClaw.db
+CONTRACTOR_ID=your_id
 ```
 
-### 3. Run Bot Server
+### 3. Start Bot Server
 
 ```bash
 node telegram-bot-server.js
 ```
 
-### 4. Connect Your Account
+### 4. Test Connection
 
-1. Search for your bot in Telegram
+1. Find your bot in Telegram
 2. Send `/start`
-3. Send your contractor ID (from setup)
-4. Done!
+3. Send your contractor ID
+4. Done! You can now post jobs via text
 
 ---
 
@@ -274,7 +278,7 @@ const MessageHandler = require('./message-handler');
 
 const handler = new MessageHandler();
 
-// From WhatsApp/Telegram/OpenClaw
+// From WhatsApp/Telegram/Dashboard
 const contractorId = "contractor_abc123";
 const message = "I need a plumber tomorrow";
 

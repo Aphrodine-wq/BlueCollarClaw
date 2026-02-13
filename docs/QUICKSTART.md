@@ -16,7 +16,7 @@ A fully functional MVP of the BlueCollarClaw protocol:
 
 **Node.js 18+** (you already have this installed)
 
-That's it. The demo runs locally without needing MQTT.
+That's it. BlueCollarClaw is completely standalone and runs locally without external dependencies.
 
 ## Installation
 
@@ -107,10 +107,10 @@ BlueCollarClaw/
 
 ### Phase 2 (Next Month)
 
-1. **OpenClaw skill wrapper** — Package this as a proper OpenClaw plugin
-2. **WhatsApp/Telegram interface** — Send/receive via messaging
-3. **Web dashboard** — View bookings, manage profile, see analytics
-4. **Payment/escrow** — Stripe integration for deposits
+1. **Messaging bots** — WhatsApp/Telegram integration for natural language job posting
+2. **Web dashboard** — View bookings, manage profile, see analytics
+3. **Payment/escrow** — Stripe integration for deposits
+4. **Advanced analytics** — Market intelligence and trend analysis
 
 ## What's Missing (Intentionally)
 
@@ -140,9 +140,9 @@ Only one agent per contractor ID at a time (SQLite limitation). For multi-instan
 ## Architecture Notes
 
 - **Database:** SQLite for dev. In production, migrate to Postgres (schema is compatible).
-- **Messaging:** MQTT for MVP. Migrate to libp2p for true P2P eventually.
-- **Security:** RSA signing is implemented but verification is basic. Strengthen for production.
-- **Calendar:** Using simple in-memory calendar. Google Calendar integration is there but requires OAuth setup.
+- **Messaging:** MQTT for scalable network mode, or Telegram/WhatsApp bots for simplicity. Migrate to libp2p for true P2P eventually.
+- **Security:** RSA signing is implemented. Strengthen for production with proper key management.
+- **Calendar:** Using simple in-memory calendar. Google Calendar integration is available but requires OAuth setup.
 
 ## What This Proves
 

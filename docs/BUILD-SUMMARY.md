@@ -146,7 +146,7 @@ npm run setup
 ### 🔥 What's Next (When You're Ready)
 
 **Tonight (if you want to keep going):**
-- [ ] Hook up OpenClaw skill wrapper
+- [ ] Publish as standalone NPM package
 - [ ] Add WhatsApp/Telegram commands
 - [ ] Deploy the web dashboard (Vercel/Railway)
 

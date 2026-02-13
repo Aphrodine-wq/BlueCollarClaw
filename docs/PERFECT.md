@@ -32,7 +32,7 @@
 - ✅ GitHub analysis (Your repos: GRUMPCO, G-Rump-Marketing)
 - ✅ BlueCollarClaw business data (jobs, offers, bookings)
 - ✅ Daily motivation (20 unique quotes)
-- ✅ Scheduled 7 AM daily (Telegram delivery)
+- ✅ Scheduled 7 AM daily (via system cron)
 
 ---
 
@@ -119,7 +119,7 @@ npm start
 ### Needs Configuration ⚙️
 1. MQTT broker (HiveMQ free tier - 5 min setup)
 2. Weather API key (OpenWeather - free)
-3. Messaging (OpenClaw or Telegram bot)
+3. Messaging (Telegram bot, Email, SMS)
 4. Deployment (Vercel/Railway - 10 min)
 
 **None of these are code issues.** Just setup/deployment.

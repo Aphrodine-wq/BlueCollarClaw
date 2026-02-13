@@ -102,7 +102,7 @@ node cli.js broadcast GC_ID
 # Add Telegram bot (easiest)
 1. Talk to @BotFather on Telegram
 2. Get bot token
-3. Add to OpenClaw config
+3. Add to BlueCollarClaw config (.env)
 4. Contractors interact via chat:
    "Find me a plumber for Tuesday, $80-100/hr"
 ```

@@ -58,8 +58,9 @@ A stunning, real-time dashboard gives you a bird's-eye view of all your active j
 BlueCollarClaw is built on:
 - **Node.js** & **Express**
 - **SQLite** (Zero-config database)
-- **OpenClaw** (Agent framework)
+- **Anthropic Claude AI** (Intelligent matching & negotiation)
 - **Telegram Bot API**
+- **Web Dashboard** (No install required for contractors)
 
 ### Project Structure
 - `/public` - The "crazy nice" web interface

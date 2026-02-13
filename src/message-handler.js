@@ -3,15 +3,12 @@
 /**
  * BlueCollarClaw Message Handler
  * 
- * This receives messages from OpenClaw or Telegram and handles:
+ * This receives messages from Telegram, Email, or the Web Dashboard and handles:
  * - Natural language job posting
  * - Offer acceptance/decline
  * - Status queries
- * 
- * Usage with OpenClaw:
- *   Add to OpenClaw config to route messages to BlueCollarClaw
- * 
- * Usage standalone:
+ *
+ * Usage:
  *   node message-handler.js
  */
 
@@ -361,7 +358,7 @@ Dashboard: http://localhost:3000`);
   }
 }
 
-// Export for use in OpenClaw or Telegram bot
+// Export for use in Telegram bot, API routes, etc.
 module.exports = MessageHandler;
 
 // Run standalone for testing

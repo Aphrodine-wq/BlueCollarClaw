@@ -165,7 +165,7 @@ Reply "post it" to broadcast this job, or give me more details.`
 ${parsed.trade ? '✅ Trade: ' + parsed.trade : '❌ What trade do you need?'}
 ${parsed.location ? '✅ Location: ' + parsed.location : '❌ Where is the job?'}
 ${parsed.startDate ? '✅ Dates: ' + parsed.startDate + ' to ' + parsed.endDate : '❌ When do you need them?'}
-${parsed.minRate ? '✅ Budget: $' + parsed.minRate + '-$' + parsed.maxRate + '/hr' : '❌ What\\'s your budget per hour?'}
+${parsed.minRate ? '✅ Budget: $' + parsed.minRate + '-$' + parsed.maxRate + '/hr' : "❌ What is your budget per hour?"}
 
 Just reply with the missing info!`,
       missing

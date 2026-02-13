@@ -42,13 +42,13 @@ Already configured in `pulse-config.json`:
 
 ### Integration Points
 
-**With OpenClaw:**
-- Add to OpenClaw cron for automatic daily delivery
+**With system cron:**
+- Add to crontab for automatic daily delivery
 - Sends via Telegram/WhatsApp
 - Pulls from connected calendars, messages, finances
 
 **Standalone:**
-- Run manually anytime
+- Run manually anytime with `npm run pulse`
 - Preview with `--dry-run`
 - Single sections: `--section weather`
 

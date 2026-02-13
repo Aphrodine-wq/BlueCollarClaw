@@ -22,7 +22,7 @@
 - Real talk, no fluff
 
 ### 3. **Scheduled for 7 AM Daily**
-- Runs automatically via OpenClaw cron
+- Runs automatically via system cron or node-cron
 - Delivers to your Telegram
 - Full briefing every morning
 
@@ -145,35 +145,40 @@ node pulse-check/pulse.js --dry-run
 
 ---
 
-## 📅 Cron Schedule (Already Set!)
+## 📅 Cron Schedule Setup
 
 **Job Details:**
 - **Name:** "Daily Pulse Check - 7 AM"
 - **Schedule:** Every day at 7:00 AM Central
-- **Delivery:** Telegram (auto-announce)
-- **Status:** ✅ Enabled
+- **Delivery:** Telegram
+- **Status:** Configure via system cron or scheduler
 
-**Next run:** Tomorrow at 7:00 AM
-
-View/manage:
+**Linux/Mac (crontab):**
 ```bash
-# List all cron jobs
-openclaw cron list
+# Add to crontab
+crontab -e
 
-# Check status
-openclaw cron status
+# Add this line:
+0 7 * * * cd /path/to/BlueCollarClaw && npm run pulse
+```
 
-# Disable temporarily
-openclaw cron disable "Daily Pulse Check - 7 AM"
+**Windows (Task Scheduler):**
+```
+Action: Start a program
+Program: node
+Arguments: C:\Users\Walt\Desktop\BlueCollarClaw\pulse-check\pulse.js
+Trigger: Daily at 7:00 AM
+```
 
-# Re-enable
-openclaw cron enable "Daily Pulse Check - 7 AM"
+**Docker (recommended for servers):**
+```dockerfile
+# Run pulse check at 7 AM daily
+*/15 * * * * node /app/pulse-check/pulse.js
 ```
 
 **Test it manually:**
 ```bash
-# Run the cron job now (don't wait for 7 AM)
-openclaw cron run "Daily Pulse Check - 7 AM"
+npm run pulse
 ```
 
 ---
@@ -260,7 +265,7 @@ Edit `pulse-check/pulse-config.json`:
 ## 📱 How It Delivers
 
 **7:00 AM every morning:**
-1. OpenClaw cron wakes up
+1. System cron triggers the job
 2. Runs pulse check in isolated session
 3. Gathers all data (weather, GitHub, BlueCollarClaw, motivation)
 4. Formats for Telegram
@@ -283,9 +288,9 @@ Edit `pulse-check/pulse-config.json`:
 - Check motivation-module.js exists
 
 **Cron not running:**
-- Check: `openclaw cron list`
-- Verify enabled: `openclaw cron status`
-- Check gateway is running: `openclaw status`
+- Check: `crontab -l`
+- Verify enabled: Check system cron service status
+- Check node process is running: `npm run pulse`
 
 **No Telegram delivery:**
 - Verify channel is connected

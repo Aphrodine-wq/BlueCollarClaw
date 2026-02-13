@@ -46,21 +46,16 @@
 
 ---
 
-## Phase 3: OpenClaw Integration (Week 2-3)
+## Phase 3: Standalone Integration (Week 2-3)
 
-**Goal:** Turn this into a real OpenClaw skill
-
-### Skill Packaging
-- [ ] Create `SKILL.md` (OpenClaw skill definition)
-- [ ] Package as npm module (`@BlueCollarClaw/skill`)
-- [ ] Add to ClawHub skill directory
-- [ ] Auto-discovery and installation flow
+**Goal:** Make BlueCollarClaw fully self-contained
 
 ### Messaging Interface
-- [ ] WhatsApp commands (`/BlueCollarClaw broadcast plumber...`)
-- [ ] Telegram bot integration
+- [ ] WhatsApp bot (Twilio integration)
+- [ ] Telegram bot (Telegram Bot API)
 - [ ] Discord bot (for contractor communities)
 - [ ] Rich message formatting (buttons, inline responses)
+- [ ] SMS notifications (Twilio)
 
 ### Human-in-the-Loop
 - [ ] Approval flow for high-value bookings
@@ -73,6 +68,12 @@
 - [ ] Custom negotiation rules ("never go below $90 for commercial")
 - [ ] Per-trade preferences (electrician vs plumber rates)
 - [ ] Seasonal adjustments (rates higher in peak season)
+
+### npm Package & Deployment
+- [ ] Package as npm module (`@BlueCollarClaw/core`)
+- [ ] Auto-discovery and installation flow
+- [ ] Docker container for deployment
+- [ ] Standalone CLI tool
 
 ---
 

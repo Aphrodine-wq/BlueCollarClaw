@@ -38,7 +38,7 @@
                     <i data-lucide="log-out" class="nav-icon"></i> Log Out
                 </a>
                 <div class="nav-integration">
-                    Integrated natively with OpenClaw for Efficiency
+                    AI-Powered Contractor Network
                 </div>
             </div>
         </nav>
@@ -120,6 +120,46 @@
                 </div>
             </div>
 
+            <!-- Subscription & Billing -->
+            <div class="section-card section-padding mt-4">
+                <div class="card-header card-header-clean">
+                    <h2 class="card-title"><i data-lucide="credit-card" class="nav-icon"></i> Subscription & Billing</h2>
+                </div>
+                <div id="billing-section" style="padding: 1rem 0;">
+                    <div id="billing-loading" style="color: #94a3b8;">Loading billing info...</div>
+                </div>
+            </div>
+
+            <!-- OpenClaw Integration -->
+            <div class="section-card section-padding mt-4">
+                <div class="card-header card-header-clean">
+                    <h2 class="card-title"><i data-lucide="plug" class="nav-icon"></i> OpenClaw Integration</h2>
+                </div>
+                <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.9rem;">
+                    Already using OpenClaw? Connect your instance to receive BlueCollarClaw notifications through your existing Telegram, Discord, or WhatsApp bots.
+                </p>
+                <div id="openclaw-section">
+                    <div id="openclaw-status" style="margin-bottom: 1rem;"></div>
+                    <div id="openclaw-form">
+                        <div class="demo-grid">
+                            <div>
+                                <label class="settings-label">OpenClaw Instance URL</label>
+                                <input type="url" id="openclaw-url" class="form-input settings-input" placeholder="https://your-openclaw.example.com">
+                            </div>
+                            <div>
+                                <label class="settings-label">API Key</label>
+                                <input type="password" id="openclaw-key" class="form-input settings-input" placeholder="Your OpenClaw API key">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="connectOpenClaw()">Connect</button>
+                            <button class="btn btn-secondary" onclick="testOpenClaw()">Test Connection</button>
+                            <button class="btn btn-error" onclick="disconnectOpenClaw()" id="openclaw-disconnect-btn" style="display: none;">Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Notifications & Security -->
             <div class="demo-grid mt-4">
                 <div class="section-card section-padding">
@@ -149,6 +189,126 @@
     </div>
     <script>
         lucide.createIcons();
+
+        // Load billing info
+        async function loadBilling() {
+            try {
+                const res = await fetch('/api/billing/subscription');
+                if (res.status === 401) {
+                    document.getElementById('billing-loading').textContent = 'Log in to view billing.';
+                    return;
+                }
+                const data = await res.json();
+                const section = document.getElementById('billing-section');
+
+                const isPro = data.plan === 'pro';
+                const badge = isPro
+                    ? '<span style="background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">PRO</span>'
+                    : '<span style="background: #1e293b; color: #94a3b8; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">FREE</span>';
+
+                let billingHtml = `
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <span style="font-weight: 600; font-size: 1.1rem;">Current Plan:</span> ${badge}
+                    </div>
+                    <div style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.9rem;">
+                        ${isPro
+                            ? `Unlimited jobs & offers | ${(data.limits?.transaction_fee_rate * 100).toFixed(0)}% transaction fee | Full analytics`
+                            : `${data.limits?.max_active_jobs} active jobs | ${data.limits?.max_offers_per_month} offers/month | ${(data.limits?.transaction_fee_rate * 100).toFixed(0)}% transaction fee`
+                        }
+                    </div>
+                `;
+
+                if (isPro) {
+                    billingHtml += `
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="/api/billing/portal" class="btn btn-secondary">Manage Billing</a>
+                            <button class="btn btn-error" onclick="cancelSubscription()">Cancel Plan</button>
+                        </div>
+                    `;
+                } else {
+                    billingHtml += `
+                        <button class="btn btn-primary" onclick="upgradeToPro()" style="background: linear-gradient(135deg, #2563eb, #7c3aed); border: none;">
+                            Upgrade to Pro
+                        </button>
+                        <a href="pricing.html" style="color: #60a5fa; margin-left: 1rem; font-size: 0.9rem;">View pricing details</a>
+                    `;
+                }
+
+                section.innerHTML = billingHtml;
+            } catch (err) {
+                document.getElementById('billing-loading').textContent = 'Could not load billing info.';
+            }
+        }
+
+        async function upgradeToPro() {
+            const res = await fetch('/api/billing/create-checkout', { method: 'POST' });
+            const data = await res.json();
+            if (data.url) window.location.href = data.url;
+            else alert(data.error || 'Could not start checkout.');
+        }
+
+        async function cancelSubscription() {
+            if (!confirm('Cancel your Pro subscription? You\'ll keep access until the end of your billing period.')) return;
+            const res = await fetch('/api/billing/cancel', { method: 'POST' });
+            const data = await res.json();
+            alert(data.message || data.error);
+            loadBilling();
+        }
+
+        // OpenClaw integration
+        async function loadOpenClawStatus() {
+            try {
+                const res = await fetch('/api/integrations/openclaw/status');
+                if (res.status === 401) return;
+                const data = await res.json();
+                const statusEl = document.getElementById('openclaw-status');
+                const disconnectBtn = document.getElementById('openclaw-disconnect-btn');
+
+                if (data.connected) {
+                    const channels = Object.entries(data.channels || {}).filter(([k, v]) => v).map(([k]) => k).join(', ') || 'none configured';
+                    statusEl.innerHTML = `
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 1rem;">
+                            <span style="color: #22c55e; font-weight: 600;">Connected</span>
+                            <span style="color: #94a3b8;"> to ${data.instanceUrl}</span>
+                            <br><span style="color: #94a3b8; font-size: 0.85rem;">Channels: ${channels}</span>
+                        </div>`;
+                    disconnectBtn.style.display = 'inline-block';
+                } else {
+                    statusEl.innerHTML = '<div style="color: #94a3b8;">Not connected</div>';
+                    disconnectBtn.style.display = 'none';
+                }
+            } catch (err) {}
+        }
+
+        async function connectOpenClaw() {
+            const url = document.getElementById('openclaw-url').value;
+            const key = document.getElementById('openclaw-key').value;
+            if (!url || !key) return alert('Please enter both URL and API key.');
+
+            const res = await fetch('/api/integrations/openclaw/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instanceUrl: url, apiKey: key })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            loadOpenClawStatus();
+        }
+
+        async function disconnectOpenClaw() {
+            if (!confirm('Disconnect OpenClaw?')) return;
+            await fetch('/api/integrations/openclaw/disconnect', { method: 'DELETE' });
+            loadOpenClawStatus();
+        }
+
+        async function testOpenClaw() {
+            const res = await fetch('/api/integrations/openclaw/test', { method: 'POST' });
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        loadBilling();
+        loadOpenClawStatus();
     </script>
 </body>
 

@@ -1,7 +1,7 @@
 ---
 name: pulse-check
 description: Daily intelligent briefing skill. Compiles weather, calendar, pending messages, project status, and financial snapshot into one concise morning message. Runs via cron or on-demand via "pulse" command.
-metadata: { "openclaw": { "requires": { "env": ["OPENWEATHER_API_KEY"] } } }
+metadata: { "requires": { "env": ["OPENWEATHER_API_KEY"] } }
 ---
 
 # Pulse Check — Your Daily Briefing Skill

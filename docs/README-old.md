@@ -1,7 +1,7 @@
 # 🤝 BlueCollarClaw
 **The Autonomous Contractor Negotiation Protocol**
 
-Built on OpenClaw | Peer-to-Peer | AI-Powered
+AI-Powered | Peer-to-Peer | Standalone
 
 **Product Vision & Monetization Blueprint**  
 February 2026  
@@ -11,13 +11,13 @@ CONFIDENTIAL
 
 ## Executive Summary
 
-BlueCollarClaw is a peer-to-peer protocol built on OpenClaw that enables contractors' AI agents to autonomously discover, negotiate, and book subcontractor work with each other. Instead of phone tag, texting, and hoping someone's available, your AI handles the entire dance — broadcasting needs, evaluating responses, negotiating terms, and confirming bookings — all within parameters you set.
+BlueCollarClaw is a peer-to-peer protocol that enables contractors' AI agents to autonomously discover, negotiate, and book subcontractor work with each other. Instead of phone tag, texting, and hoping someone's available, your AI handles the entire dance — broadcasting needs, evaluating responses, negotiating terms, and confirming bookings — all within parameters you set.
 
 ### The Core Insight
 
 Contractors waste 8–15 hours per week on scheduling coordination, subcontractor sourcing, and back-and-forth negotiation. BlueCollarClaw eliminates this by letting AI agents handle the logistics while humans make the final call.
 
-This document covers the full product vision, technical architecture, go-to-market strategy, and five distinct revenue models that make BlueCollarClaw a real business — not just a cool OpenClaw skill.
+This document covers the full product vision, technical architecture, go-to-market strategy, and five distinct revenue models that make BlueCollarClaw a real business — not just a prototype or concept.
 
 ---
 
@@ -58,7 +58,7 @@ No tool exists that lets contractors' systems talk to each other autonomously. E
 
 ### What It Is
 
-BlueCollarClaw is an OpenClaw skill (plugin) that turns every contractor's AI assistant into a node in a decentralized contractor network.
+BlueCollarClaw is a standalone platform that turns every contractor's AI assistant into a node in a decentralized contractor network.
 
 Each node can:
 
@@ -76,14 +76,14 @@ Each node can:
 
 **Tuesday, 7 AM.** You're reviewing your schedule and realize the rough-in plumbing at 423 Oak St needs to happen by Friday or you'll miss the inspection window.
 
-### Step 1: You Tell Your Claw
+### Step 1: You Tell BlueCollarClaw
 
-You send a message via WhatsApp/Telegram/Discord to your OpenClaw:
+You send a message via WhatsApp/Telegram/Discord to BlueCollarClaw:
 
 **Your Message:**
 > "Hey, I need a plumber for rough-in at 423 Oak St. Residential remodel, 1,200 sqft. Needs to happen Wed–Fri this week. Budget $80–100/hr, probably 2 day job. Licensed and insured required."
 
-### Step 2: Your Claw Broadcasts to the Network
+### Step 2: BlueCollarClaw Broadcasts to the Network
 
 Your agent packages this into a structured BlueCollarClaw request and broadcasts it to the network.
 
@@ -128,9 +128,9 @@ It might auto-accept Agent A, counter Agent C at $90, and decline Agent D.
 
 ### Step 5: You Get a Summary
 
-Your Claw messages you:
+BlueCollarClaw messages you:
 
-**Claw's Message to You:**
+**BlueCollarClaw's Message to You:**
 > "Found 3 plumbers for 423 Oak St rough-in:
 > 
 > 1. **Mike's Plumbing** — $85/hr, Wed–Fri, 4.8★ (12 BlueCollarClaw jobs). Full match. I've tentatively held this.
@@ -143,7 +143,7 @@ Your Claw messages you:
 
 You reply **"Go with Mike."**
 
-Your agent:
+BlueCollarClaw:
 - Confirms with Mike's agent
 - Exchanges contact information
 - Generates a simple subcontractor agreement with the agreed terms
@@ -153,7 +153,7 @@ Your agent:
 
 **Total time for you: 45 seconds to read and reply.**
 
-Your agent handled the rest.
+BlueCollarClaw handled the rest.
 
 ---
 
@@ -161,14 +161,14 @@ Your agent handled the rest.
 
 ### System Overview
 
-BlueCollarClaw is built as a modular OpenClaw skill with four core layers:
+BlueCollarClaw is built as a modular platform with four core layers:
 
 | Layer | Description |
 |-------|-------------|
-| **Identity Layer** | Each contractor creates a BlueCollarClaw profile: trades, location, service radius, rate ranges, availability rules, licensing/insurance docs, and negotiation preferences. Stored locally on their OpenClaw instance. A cryptographic keypair is generated for message signing. |
-| **Network Layer** | A lightweight pub/sub messaging layer. Options: (a) MQTT broker hosted by you (simplest), (b) libp2p for true decentralization, or (c) Matrix protocol (leverages existing OpenClaw Matrix support). Agents subscribe to channels by trade and region. |
+| **Identity Layer** | Each contractor creates a BlueCollarClaw profile: trades, location, service radius, rate ranges, availability rules, licensing/insurance docs, and negotiation preferences. Stored locally in the BlueCollarClaw database. A cryptographic keypair is generated for message signing. |
+| **Network Layer** | A lightweight pub/sub messaging layer. Options: (a) MQTT broker hosted by you (simplest), (b) libp2p for true decentralization, or (c) Telegram/WhatsApp bots (for direct messaging). Agents subscribe to channels by trade and region. |
 | **Negotiation Engine** | The AI-powered brain. Processes incoming requests against local preferences, generates counter-offers, evaluates responses, and makes recommendations. Uses structured JSON messaging with versioned schemas. All negotiation happens agent-to-agent. |
-| **Settlement Layer** | Handles booking confirmation, contract generation (templated PDFs), calendar integration, contact exchange, and post-job rating. Optionally integrates with payment processors for deposits/escrow. |
+| **Settlement Layer** | Handles booking confirmation, contract generation (templated PDFs), calendar integration, contact exchange, and post-job rating. Optionally integrates with payment processors (Stripe) for deposits/escrow. |
 
 ### Message Protocol: BlueCollarClaw Handshake Format
 
@@ -188,8 +188,8 @@ Messages are signed with the sender's private key and include timestamps, expira
 | **Federated** | Regional hubs. Scales well. | Moderate complexity. Need hub operators. Still somewhat centralized. | Growth Phase |
 | **P2P (libp2p)** | Truly decentralized. Censorship resistant. No server costs. | Complex. Slower discovery. NAT traversal issues. | Long-term Vision |
 
-**Recommendation:**  
-Start with MQTT hub (you host it). Migrate to federated as you grow. Keep P2P as the north star for the protocol — it's the moat that makes BlueCollarClaw unkillable.
+**Recommendation:**
+Start with MQTT hub (you host it) or Telegram bot (simplest). Migrate to federated as you grow. Keep P2P (libp2p) as the north star for the protocol — it's the moat that makes BlueCollarClaw unkillable.
 
 ### Security & Trust
 
@@ -345,9 +345,9 @@ A marketplace is only as good as its liquidity. The cold start problem is real. 
 
 1. **Start hyperlocal.** Pick ONE metro area where you have connections. Get 20–30 contractors across 4–5 trades using it.
 2. **Seed both sides.** You need GCs broadcasting AND subs listening. Recruit in pairs — get a GC and their favorite sub on together.
-3. **Free everything.** No fees, no subscriptions. Just the core skill. Make it dead simple to install and configure.
+3. **Free everything.** No fees, no subscriptions. Just the core BlueCollarClaw platform. Make it dead simple to install and configure.
 4. **Be the matchmaker.** Manually facilitate the first 50 bookings. Watch what breaks. Iterate fast.
-5. **Leverage OpenClaw community.** 145K+ GitHub stars means there's a massive audience of early adopters. Post the skill, do a demo, get builders excited.
+5. **Leverage construction communities.** Post on construction forums, Reddit, Facebook groups, and LinkedIn. Get builders excited about the tool.
 
 ### Phase 2: Network Effects (Months 3–9)
 
@@ -381,7 +381,7 @@ Why BlueCollarClaw is defensible:
 2. **Data Moat**: Real-time supply/demand data across trades and regions. Nobody else has this. It improves every negotiation and becomes more valuable over time.
 3. **Reputation Portability**: A contractor's BlueCollarClaw reputation score follows them. Switching costs increase with every completed job. This is the LinkedIn effect for construction.
 4. **Protocol Lock-in**: If BlueCollarClaw becomes the standard protocol for contractor negotiation, competitors have to be compatible with it. You win even when others build alternatives.
-5. **OpenClaw Ecosystem**: Built on the fastest-growing open source AI agent platform. You ride the wave of every new OpenClaw user.
+5. **AI-Powered Negotiation**: Autonomous agent negotiation is a unique capability. Competitors will struggle to replicate the complexity and intelligence of the matching engine.
 
 ---
 
@@ -391,9 +391,8 @@ Why BlueCollarClaw is defensible:
 |------|----------|------------|
 | Cold start / low liquidity | High | Hyperlocal launch, seed both sides, manual facilitation, free tier |
 | Contractors skip the fee (book offline) | Medium | Escrow creates sticky value. Reputation only builds on-platform. Make it easier to stay than leave. |
-| Trust / adoption resistance | Medium | Verified badges, transparent reputation, start with tech-forward contractors who already use OpenClaw |
+| Trust / adoption resistance | Medium | Verified badges, transparent reputation, start with tech-forward contractors who already use AI tools |
 | Competitor clones it | Low–Medium | Network effects + data moat + reputation portability = extremely hard to replicate once established |
-| OpenClaw changes direction | Low | Protocol is independent. BlueCollarClaw can work with any AI agent platform. OpenClaw dependency is a starting point, not a lock-in. |
 | Regulatory / licensing issues | Medium | Work with construction attorneys. Vary by state. Phase escrow/payments carefully with proper licensing. |
 
 ---
@@ -404,13 +403,13 @@ Don't boil the ocean. Here's the minimum viable BlueCollarClaw:
 
 ### MVP Feature Set (4–6 Weeks)
 
-1. BlueCollarClaw OpenClaw skill with profile setup (trade, location, rates, availability rules)
+1. BlueCollarClaw platform with profile setup (trade, location, rates, availability rules)
 2. Broadcast/Listen via MQTT broker you host
 3. Simple matching: exact trade + location radius + availability + rate range
 4. One-round negotiation (offer → accept/decline, no counter-offers yet)
 5. Booking confirmation with calendar event creation
 6. Basic rating system (1–5 stars + optional comment, post-job)
-7. WhatsApp/Telegram/Discord interface via OpenClaw channels
+7. WhatsApp/Telegram/Discord interface via Telegram, WhatsApp, and Discord
 
 ### What's NOT in MVP
 
@@ -430,13 +429,13 @@ That's your proof of concept. Everything else builds from there.
 
 ## The Bottom Line
 
-BlueCollarClaw isn't just an OpenClaw skill — it's a **protocol** that turns every contractor's AI into a node in the first autonomous contractor marketplace.
+BlueCollarClaw is a **protocol** that turns every contractor's AI into a node in the first autonomous contractor marketplace.
 
 The construction industry is a **$2 trillion market** that still runs on phone calls and text messages. BlueCollarClaw modernizes the most painful part of the workflow — finding and booking subcontractors — and captures value at every layer: transactions, subscriptions, trust, data, and payments.
 
-The timing is perfect. OpenClaw has 145K+ stars and growing. Contractors are starting to adopt AI tools. The infrastructure exists. The pain point is massive and universal.
+The timing is perfect. Contractors are starting to adopt AI tools. The infrastructure exists. The pain point is massive and universal.
 
-**Build the skill. Seed the network. Own the protocol.**
+**Build the platform. Seed the network. Own the protocol.**
 
 ---
 
@@ -444,11 +443,11 @@ The timing is perfect. OpenClaw has 145K+ stars and growing. Contractors are sta
 
 ---
 
-## 🆕 NEW: Telegram Bot Integration
+## 🆕 NEW: Telegram Bot & WhatsApp Integration
 
 ### Natural Language Job Posting
 
-Users can now post jobs by simply texting the BlueCollarClaw Telegram bot. No forms, no clicking — just natural language.
+Users can now post jobs by simply texting BlueCollarClaw via Telegram or WhatsApp. No forms, no clicking — just natural language.
 
 **Example:**
 ```
@@ -468,37 +467,24 @@ Bot: "🎯 Job posted!
 
 - **Natural language parsing** — Automatically extracts category, location, budget, and urgency
 - **Smart keyword detection** — Recognizes 7+ trade categories with intelligent scoring
-- **Automatic notifications** — Matching contractors receive alerts via your messaging platform
+- **Multi-channel support** — Telegram and WhatsApp (via Twilio)
+- **Automatic notifications** — Matching contractors receive alerts via their preferred platform
 - **Dashboard integration** — All jobs appear in the web dashboard instantly
 - **Zero friction** — Users don't need to install anything or remember commands
 
 ### Quick Start
 
-1. **Create a Telegram bot:**
-   - Message @BotFather on Telegram
-   - Send `/newbot` and follow instructions
-   - Copy your API token
+**Telegram:**
+1. Message @BotFather on Telegram
+2. Send `/newbot` and follow instructions
+3. Copy your API token and set `TELEGRAM_BOT_TOKEN` in .env
+4. Run: `npm run telegram`
 
-2. **Configure the bot:**
-   ```bash
-   # Set your bot token
-   export TELEGRAM_BOT_TOKEN=your_token_here
-   ```
-
-3. **Start the bot:**
-   ```bash
-   npm run telegram
-   ```
-
-4. **Test it:**
-   - Search for your bot on Telegram
-   - Send: "I need a plumber to fix my sink"
-   - Watch the magic happen!
-
-### Supported Commands
-
-- `/start` — Get started with the bot
-- `/help` — View help information
+**WhatsApp (via Twilio):**
+1. Create Twilio account and get WhatsApp sandbox credentials
+2. Set environment variables: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+3. Configure webhook: `https://your-server.com/whatsapp/webhook`
+4. Run: `npm run whatsapp`
 
 ### Supported Job Categories
 
@@ -514,16 +500,17 @@ The bot automatically detects:
 
 ### Technical Details
 
-- Uses `node-telegram-bot-api` for Telegram integration
+- **Telegram:** Uses `node-telegram-bot-api`
+- **WhatsApp:** Uses Twilio API
 - Implements keyword scoring for accurate category detection
 - Integrates with existing BlueCollarClaw database
 - Supports PostgreSQL for production deployments
-- Can be extended with AI-powered NLP (Claude/Anthropic)
+- Easily extended with Claude API for advanced NLP
 
 ### Next Steps
 
-- Add WhatsApp bot using Twilio
-- Implement AI-powered parsing with Claude
+- Implement advanced AI parsing with Claude
 - Add contractor response handling via bot
 - Enable job status updates through messaging
 - Add image/video support for job descriptions
+- Implement multi-language support

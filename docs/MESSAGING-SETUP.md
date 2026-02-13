@@ -38,30 +38,28 @@ This guide shows you exactly how to do it.
 
 **Steps:**
 
-#### Using OpenClaw (Recommended)
+#### Using Twilio WhatsApp Business API (Recommended)
 
-1. **Install OpenClaw**
+1. **Sign up for Twilio**
+   - Go to https://www.twilio.com/
+   - Create account and verify phone number
+
+2. **Get WhatsApp Credentials**
+   - In Twilio console, navigate to Messaging > WhatsApp
+   - Create WhatsApp Business Account
+   - Get phone number and API credentials
+
+3. **Configure BlueCollarClaw**
+   - Create `.env` file:
+   ```
+   TWILIO_ACCOUNT_SID=your_account_sid
+   TWILIO_AUTH_TOKEN=your_auth_token
+   TWILIO_PHONE_NUMBER=+1234567890
+   ```
+
+4. **Start WhatsApp Bot**
    ```bash
-   npm install -g openclaw
-   ```
-
-2. **Add WhatsApp Channel**
-   ```bash
-   openclaw channel add whatsapp
-   ```
-
-3. **Scan QR Code**
-   - A QR code will appear in your terminal
-   - Open WhatsApp on your phone
-   - Go to Settings > Linked Devices
-   - Tap "Link a Device"
-   - Scan the QR code
-
-4. **Link to BlueCollarClaw**
-   - Add to `my-BlueCollarClaw-config.txt`:
-   ```
-   WHATSAPP_LINKED=true
-   WHATSAPP_PHONE=+1234567890
+   node whatsapp-bot.js
    ```
 
 **Done! You'll get job alerts on WhatsApp.**
@@ -102,28 +100,31 @@ This guide shows you exactly how to do it.
 
 ---
 
-### WhatsApp Business API
+### Advanced WhatsApp Setup (Production)
 
-**For production at scale:**
+**For enterprise deployment:**
 
-1. **Sign Up**
-   - Go to: https://business.whatsapp.com/
+1. **Setup Facebook Business Manager**
+   - Go to: https://business.facebook.com/
    - Create business account
 
-2. **Get API Access**
-   - Apply for API: https://developers.facebook.com/products/whatsapp/
+2. **Get WhatsApp Business API**
+   - Apply at: https://developers.facebook.com/products/whatsapp/
    - Get approved (can take a few days)
 
-3. **Add Credentials**
-   - Create `.env`:
+3. **Configure BlueCollarClaw**
+   - Add to `.env`:
    ```
-   WHATSAPP_API_KEY=your_key
+   WHATSAPP_API_KEY=your_api_key
    WHATSAPP_PHONE_ID=your_phone_id
    WHATSAPP_BUSINESS_ID=your_business_id
+   WEBHOOK_URL=https://your-server.com/whatsapp/webhook
    ```
 
-4. **Configure Webhooks**
-   - Point to: `https://your-server.com/whatsapp/webhook`
+4. **Deploy Server**
+   - Run BlueCollarClaw on production server
+   - Configure webhook endpoint
+   - Verify webhook with Facebook
 
 ---
 
@@ -209,17 +210,17 @@ You should get a message on WhatsApp.
 
 ### WhatsApp Not Working
 
-**Issue:** QR code won't scan  
+**Issue:** Not receiving WhatsApp messages
 **Fix:**
-1. Make sure OpenClaw is updated
+1. Make sure Twilio is properly configured
 2. Try closing and reopening WhatsApp
-3. Restart the linking process
+3. Restart the WhatsApp bot server
 
-**Issue:** Disconnected  
+**Issue:** Webhook not responding
 **Fix:**
-1. Re-run: `openclaw channel add whatsapp`
-2. Scan QR code again
-3. Check phone has internet
+1. Re-run the WhatsApp bot with correct webhook URL
+2. Verify Twilio webhook is configured correctly
+3. Check server has internet connectivity
 
 ---
 
@@ -302,7 +303,7 @@ npm run demo
 ## 📞 Support
 
 **Telegram issues:** Check @BotFather docs  
-**WhatsApp issues:** Check OpenClaw docs  
+**WhatsApp issues:** Check Twilio WhatsApp API docs
 **BlueCollarClaw issues:** Run diagnostic: `npm run check`
 
 ---

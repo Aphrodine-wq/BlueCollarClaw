@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Pulse Check — OpenClaw Daily Briefing Skill
+ * Pulse Check — BlueCollarClaw Daily Briefing
  * 
  * Compiles weather, calendar, unreplied messages, finances,
  * project status, and AI-prioritized tasks into one message.
@@ -120,7 +120,7 @@ async function getWeather() {
 }
 
 // ─────────────────────────────────────────────
-// Calendar Module (stub — integrates with OpenClaw's calendar tools)
+// Calendar Module (stub — integrates with Google Calendar or other calendar APIs)
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
 // Database Helper
@@ -448,8 +448,8 @@ async function main() {
     console.log('=== DRY RUN (not sending) ===\n');
     console.log(pulse);
   } else {
-    // In production, this sends via OpenClaw's channel system
-    // For now, output to stdout (OpenClaw captures and routes it)
+    // In production, this sends via Telegram, Email, or SMS
+    // For now, output to stdout
     console.log(pulse);
   }
 }

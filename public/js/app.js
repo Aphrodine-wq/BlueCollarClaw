@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.location.protocol === 'file:') {
     const msg = 'This application must be run via the Node.js server to function correctly.\n\nPlease open http://localhost:3000 in your browser.';
     alert(msg);
-    // Don't continue execution if running as file
     return;
   }
 
@@ -13,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Highlight active nav item
   const path = window.location.pathname;
   document.querySelectorAll('.nav-item').forEach(el => {
-    // loosen comparison for file protocol or different roots
     if (el.getAttribute('href') === path || path.endsWith(el.getAttribute('href'))) {
       el.classList.add('active');
     } else {
@@ -21,21 +19,135 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Initialize WebSocket connection
+  initWebSocket(user?.id);
+
   if (!user) {
-    // Allow landing page (/) and index.html
     if (path !== '/' && !path.endsWith('/index.html') && !path.endsWith('/')) {
       window.location.href = 'login.html';
       return;
     }
     renderLandingPage(container);
   } else {
-    // Basic router
     if (path === '/' || path === '/index.html' || path === '/dashboard.html') {
       renderDashboard(container, user);
+    } else if (path.includes('jobs.html')) {
+      renderJobsPage();
+    } else if (path.includes('contractors.html')) {
+      renderContractorsPage();
+    } else if (path.includes('messages.html')) {
+      renderMessagesPage();
     }
-    // Other pages are loaded normally as static HTML files
   }
 });
+
+// WebSocket connection
+let ws = null;
+let wsReconnectInterval = null;
+
+function initWebSocket(userId) {
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+  
+  ws = new WebSocket(wsUrl);
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected');
+    if (wsReconnectInterval) {
+      clearInterval(wsReconnectInterval);
+      wsReconnectInterval = null;
+    }
+    
+    // Authenticate if user is logged in
+    if (userId) {
+      ws.send(JSON.stringify({ type: 'auth', userId }));
+    }
+  };
+  
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    handleWebSocketMessage(data);
+  };
+  
+  ws.onclose = () => {
+    console.log('🔌 WebSocket disconnected');
+    // Attempt to reconnect every 5 seconds
+    if (!wsReconnectInterval) {
+      wsReconnectInterval = setInterval(() => {
+        console.log('Attempting to reconnect...');
+        initWebSocket(userId);
+      }, 5000);
+    }
+  };
+  
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+}
+
+function handleWebSocketMessage(data) {
+  console.log('📨 WebSocket message:', data);
+  
+  switch (data.type) {
+    case 'connected':
+      console.log('Connected with client ID:', data.clientId);
+      break;
+      
+    case 'auth':
+      if (data.status === 'ok') {
+        console.log('WebSocket authenticated');
+      }
+      break;
+      
+    case 'new_job':
+      showNotification('New job posted!', `A new ${data.job.trade} job is available.`);
+      refreshJobList();
+      break;
+      
+    case 'new_offer':
+      showNotification('New offer received!', `Someone offered $${data.offer.rate}/hr for your ${data.job.trade} job.`);
+      refreshOffersList();
+      break;
+      
+    case 'booking_created':
+      showNotification('Booking confirmed!', `Your ${data.booking.trade} job is now booked.`);
+      refreshBookingsList();
+      break;
+      
+    case 'offer_declined':
+      refreshOffersList();
+      break;
+  }
+}
+
+function showNotification(title, message) {
+  // Check if browser supports notifications
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body: message });
+  } else {
+    // Show in-app toast notification
+    const toast = document.createElement('div');
+    toast.className = 'notification-toast';
+    toast.innerHTML = `
+      <div style="position: fixed; top: 20px; right: 20px; background: #2563eb; color: white; 
+                  padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  z-index: 10000; max-width: 400px;">
+        <strong>${title}</strong><br>
+        ${message}
+      </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 5000);
+  }
+}
+
+// Request notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
 
 async function checkAuth() {
   try {
@@ -72,7 +184,7 @@ function renderLandingPage(container) {
         <div style="text-align: center; margin-bottom: 4rem;">
             <p style="text-transform: uppercase; font-size: 0.75rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 1.5rem;">Trusted Technology</p>
             <div style="display: flex; gap: 3rem; justify-content: center; opacity: 0.5; filter: grayscale(1);">
-                <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield"></i> OpenClaw</div>
+                <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="shield"></i> Secure</div>
                 <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="cpu"></i> AI-Native</div>
                 <div style="font-weight: 700; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="check-circle"></i> Verified</div>
             </div>
@@ -108,7 +220,6 @@ function renderLandingPage(container) {
 }
 
 function renderDashboard(container, user) {
-  // Fetch real stats (keep this)
   fetch('/api/analytics')
     .then(res => res.json())
     .then(data => {
@@ -124,7 +235,6 @@ function renderDashboard(container, user) {
 
   const isHomeowner = user.role === 'homeowner';
 
-  // Render Layout
   container.innerHTML = `
     <div class="animate-fade-in">
         <!-- Welcome Banner -->
@@ -177,7 +287,6 @@ function renderDashboard(container, user) {
                         <i data-lucide="activity" style="width:20px"></i> Recent Activity
                     </div>
                 </div>
-                <!-- Replaced Table with Feed -->
                 <div id="activity-feed-container">
                     <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Loading activity...</div>
                 </div>
@@ -199,11 +308,25 @@ function renderDashboard(container, user) {
                 </div>
             </div>
         </div>
+
+        <!-- Pending Offers Section (for homeowners) -->
+        ${isHomeowner ? `
+        <div class="section-card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i data-lucide="inbox" style="width:20px"></i> Pending Offers
+                </div>
+            </div>
+            <div id="pending-offers-container">
+                <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Loading offers...</div>
+            </div>
+        </div>
+        ` : ''}
     </div>
   `;
 
-  // Poll for data
   fetchbookings();
+  if (isHomeowner) fetchPendingOffers();
   lucide.createIcons();
 }
 
@@ -220,8 +343,8 @@ async function fetchbookings() {
       return;
     }
 
-    container.className = 'activity-feed'; // Apply feed style wrapper
-    container.style.border = 'none'; // distinct from card
+    container.className = 'activity-feed';
+    container.style.border = 'none';
     container.style.boxShadow = 'none';
 
     container.innerHTML = bookings.map(b => `
@@ -246,6 +369,84 @@ async function fetchbookings() {
   }
 }
 
+async function fetchPendingOffers() {
+  try {
+    const res = await fetch('/api/my-offers');
+    const data = await res.json();
+    const container = document.getElementById('pending-offers-container');
+    
+    if (!container) return;
+
+    const pendingOffers = data.received?.filter(o => o.status === 'pending') || [];
+
+    if (pendingOffers.length === 0) {
+      container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">No pending offers. Post a job to receive offers!</div>';
+      return;
+    }
+
+    container.innerHTML = pendingOffers.map(o => `
+      <div class="offer-item" style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong>${o.contractor_name}</strong> offered 
+            <strong>$${o.rate}/hr</strong> for 
+            ${o.trade} in ${o.location}
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button onclick="acceptOffer('${o.id}')" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                Accept
+            </button>
+            <button onclick="declineOffer('${o.id}')" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                Decline
+            </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Error fetching offers:', e);
+  }
+}
+
+async function acceptOffer(offerId) {
+  try {
+    const res = await fetch(`/api/offers/${offerId}/accept`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showNotification('Success!', 'Offer accepted and booking created.');
+      fetchPendingOffers();
+      fetchbookings();
+    } else {
+      alert(data.message || 'Error accepting offer');
+    }
+  } catch (e) {
+    console.error('Error:', e);
+    alert('Error accepting offer');
+  }
+}
+
+async function declineOffer(offerId) {
+  try {
+    const res = await fetch(`/api/offers/${offerId}/decline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (res.ok) {
+      showNotification('Declined', 'Offer declined.');
+      fetchPendingOffers();
+    } else {
+      alert('Error declining offer');
+    }
+  } catch (e) {
+    console.error('Error:', e);
+    alert('Error declining offer');
+  }
+}
+
 function getIconForTrade(trade) {
   const t = (trade || '').toLowerCase();
   if (t.includes('plumb')) return 'droplet';
@@ -259,4 +460,169 @@ function getStatusBadge(status) {
   if (status === 'confirmed') return 'badge-success';
   if (status === 'pending') return 'badge-warning';
   return 'badge-neutral';
+}
+
+function refreshJobList() {
+  if (window.location.pathname.includes('jobs.html')) {
+    renderJobsPage();
+  }
+}
+
+function refreshOffersList() {
+  fetchPendingOffers();
+}
+
+function refreshBookingsList() {
+  fetchbookings();
+}
+
+// Jobs Page Renderer
+async function renderJobsPage() {
+  const container = document.querySelector('.main-content');
+  if (!container) return;
+
+  try {
+    const [requestsRes, offersRes] = await Promise.all([
+      fetch('/api/requests'),
+      fetch('/api/my-offers')
+    ]);
+    
+    const requests = await requestsRes.json();
+    const offersData = await offersRes.json();
+    
+    const openRequests = requests.filter(r => r.status === 'open');
+    const myOffers = offersData.sent || [];
+    const receivedOffers = offersData.received || [];
+
+    container.innerHTML = `
+      <div class="animate-fade-in">
+        <h1 style="margin-bottom: 2rem;">Job Requests & Offers</h1>
+        
+        <div class="section-card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div class="card-title">Open Job Requests</div>
+                <button onclick="showPostJobModal()" class="btn btn-primary">Post New Job</button>
+            </div>
+            <div id="requests-list">
+                ${openRequests.length === 0 ? 
+                  '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">No open job requests.</div>' :
+                  openRequests.map(r => `
+                    <div class="request-item" style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <strong>${r.trade}</strong> in ${r.location}
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    ${r.start_date} to ${r.end_date} • $${r.min_rate}-$${r.max_rate}/hr
+                                </div>
+                            </div>
+                            <button onclick="showMakeOfferModal('${r.id}', '${r.trade}')" class="btn btn-primary">
+                                Make Offer
+                            </button>
+                        </div>
+                    </div>
+                  `).join('')
+                }
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="card-header">
+                <div class="card-title">My Offers</div>
+            </div>
+            <div id="my-offers-list">
+                ${myOffers.length === 0 ? 
+                  '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">You haven\'t made any offers yet.</div>' :
+                  myOffers.map(o => `
+                    <div class="offer-item" style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div>
+                                <strong>${o.trade}</strong> in ${o.location}
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    $${o.rate}/hr • Status: <span class="badge ${getStatusBadge(o.status)}">${o.status}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  `).join('')
+                }
+            </div>
+        </div>
+      </div>
+    `;
+    
+    lucide.createIcons();
+  } catch (e) {
+    console.error('Error loading jobs page:', e);
+  }
+}
+
+function showMakeOfferModal(requestId, trade) {
+  const rate = prompt(`Enter your hourly rate for ${trade} job:`);
+  if (!rate) return;
+  
+  fetch(`/api/requests/${requestId}/offers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rate: parseFloat(rate) })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message) {
+      showNotification('Success!', 'Your offer has been submitted.');
+      renderJobsPage();
+    } else {
+      alert(data.error || 'Error submitting offer');
+    }
+  })
+  .catch(e => {
+    console.error('Error:', e);
+    alert('Error submitting offer');
+  });
+}
+
+function showPostJobModal() {
+  const trade = prompt('What trade do you need? (plumber, electrician, etc.)');
+  if (!trade) return;
+  
+  const location = prompt('Where is the job?');
+  if (!location) return;
+  
+  const max_rate = prompt('What is your maximum budget per hour?');
+  if (!max_rate) return;
+  
+  fetch('/api/requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      trade,
+      location,
+      max_rate: parseFloat(max_rate),
+      description: `Job posted from web dashboard`
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.job) {
+      showNotification('Success!', 'Your job has been posted.');
+      renderJobsPage();
+    } else {
+      alert(data.error || 'Error posting job');
+    }
+  })
+  .catch(e => {
+    console.error('Error:', e);
+    alert('Error posting job');
+  });
+}
+
+// Contractors Page Renderer
+async function renderContractorsPage() {
+  // This would show contractor listings
+  console.log('Contractors page loaded');
+}
+
+// Messages Page Renderer
+async function renderMessagesPage() {
+  // This would show messages/conversations
+  console.log('Messages page loaded');
 }
