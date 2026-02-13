@@ -29,14 +29,14 @@ const clients = new Map();
 // WebSocket connection handler
 wss.on('connection', (ws, req) => {
   console.log('🔌 New WebSocket connection');
-  
+
   const clientId = nanoid(8);
   clients.set(clientId, { ws, userId: null });
-  
+
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message);
-      
+
       // Authenticate WebSocket connection
       if (data.type === 'auth' && data.userId) {
         clients.get(clientId).userId = data.userId;
@@ -46,12 +46,12 @@ wss.on('connection', (ws, req) => {
       console.error('WebSocket message error:', error);
     }
   });
-  
+
   ws.on('close', () => {
     clients.delete(clientId);
     console.log('🔌 WebSocket disconnected');
   });
-  
+
   // Send welcome message
   ws.send(JSON.stringify({ type: 'connected', clientId }));
 });
@@ -339,13 +339,13 @@ app.post('/api/requests', planLimits.checkJobLimit(), (req, res) => {
 
   db.createJobRequest(job, (err) => {
     if (err) return res.status(500).json({ error: err.message });
-    
+
     // Broadcast new job to all connected clients
     broadcast({
       type: 'new_job',
       job: job
     });
-    
+
     res.json({ message: 'Job posted successfully', job });
   });
 });
@@ -366,13 +366,13 @@ app.get('/api/requests/:id/offers', (req, res) => {
 
 // Create an offer for a job request (with plan limit check)
 app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) => {
-  
+
   const { id } = req.params;
   const { rate, message, startDate, endDate } = req.body;
   const contractorId = req.user.profileId || req.user.id;
-  
+
   const offerId = `off_${nanoid(8)}`;
-  
+
   db.createOffer({
     id: offerId,
     requestId: id,
@@ -384,7 +384,7 @@ app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) =>
     round: 1
   }, (err) => {
     if (err) return res.status(500).json({ error: err.message });
-    
+
     // Get the job request for notification
     db.getJobRequest(id, (err, jobRequest) => {
       if (!err && jobRequest) {
@@ -402,7 +402,7 @@ app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) =>
         }, jobRequest.requester_id);
       }
     });
-    
+
     res.json({ message: 'Offer submitted successfully', offerId });
   });
 });
@@ -410,10 +410,10 @@ app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) =>
 // Accept an offer
 app.post('/api/offers/:id/accept', async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
-  
+
   const { id } = req.params;
   const userId = req.user.profileId || req.user.id;
-  
+
   try {
     // Get offer with job request details
     const offer = await new Promise((resolve, reject) => {
@@ -431,15 +431,15 @@ app.post('/api/offers/:id/accept', async (req, res) => {
         }
       );
     });
-    
+
     if (!offer) {
       return res.status(404).json({ message: 'Offer not found or not authorized' });
     }
-    
+
     // Create booking
     const bookingId = `book_${nanoid(8)}`;
     const contractUrl = `/contracts/contract_${bookingId}.pdf`;
-    
+
     await new Promise((resolve, reject) => {
       db.createBooking({
         id: bookingId,
@@ -460,7 +460,7 @@ app.post('/api/offers/:id/accept', async (req, res) => {
         else resolve();
       });
     });
-    
+
     // Update offer status
     await new Promise((resolve, reject) => {
       db.updateOfferStatus(offer.id, 'accepted', (err) => {
@@ -468,7 +468,7 @@ app.post('/api/offers/:id/accept', async (req, res) => {
         else resolve();
       });
     });
-    
+
     // Update job request status
     await new Promise((resolve, reject) => {
       db.db.run(
@@ -480,7 +480,7 @@ app.post('/api/offers/:id/accept', async (req, res) => {
         }
       );
     });
-    
+
     // Generate contract
     const contractGen = new ContractGenerator();
     const gcInfo = { id: offer.requester_id, name: req.user.name };
@@ -494,9 +494,9 @@ app.post('/api/offers/:id/accept', async (req, res) => {
       rate: offer.rate,
       scope: offer.scope
     };
-    
+
     const contractPath = await contractGen.generateSubcontractorAgreement(booking, gcInfo, subInfo);
-    
+
     // Record platform transaction fee
     try {
       const feeRate = await planLimits.getTransactionFeeRate(userId);
@@ -548,7 +548,7 @@ app.post('/api/offers/:id/accept', async (req, res) => {
       bookingId,
       contractUrl
     });
-    
+
   } catch (error) {
     console.error('Error accepting offer:', error);
     res.status(500).json({ error: error.message });
@@ -558,10 +558,10 @@ app.post('/api/offers/:id/accept', async (req, res) => {
 // Decline an offer
 app.post('/api/offers/:id/decline', (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
-  
+
   const { id } = req.params;
   const userId = req.user.profileId || req.user.id;
-  
+
   // Verify the offer belongs to a job by this user
   db.db.get(
     `SELECT o.* FROM offers o
@@ -572,15 +572,15 @@ app.post('/api/offers/:id/decline', (req, res) => {
       if (err || !offer) {
         return res.status(404).json({ message: 'Offer not found' });
       }
-      
+
       db.updateOfferStatus(id, 'declined', (err) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         broadcast({
           type: 'offer_declined',
           offerId: id
         });
-        
+
         res.json({ message: 'Offer declined' });
       });
     }
@@ -605,7 +605,7 @@ app.get('/api/bookings', (req, res) => {
   }
 
   query += ' ORDER BY created_at DESC';
-  
+
   if (limit) {
     query += ' LIMIT ?';
     params.push(parseInt(limit));
@@ -637,9 +637,9 @@ app.get('/api/bookings/:id', (req, res) => {
 // Get my offers (for current user)
 app.get('/api/my-offers', (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
-  
+
   const userId = req.user.profileId || req.user.id;
-  
+
   // Get offers received (for jobs posted by this user)
   db.db.all(
     `SELECT o.*, j.trade, j.location, j.start_date, j.end_date, 
@@ -652,7 +652,7 @@ app.get('/api/my-offers', (req, res) => {
     [userId],
     (err, received) => {
       if (err) return res.status(500).json({ error: err.message });
-      
+
       // Get offers sent (by this user)
       db.db.all(
         `SELECT o.*, j.trade, j.location, j.start_date, j.end_date,
@@ -664,7 +664,7 @@ app.get('/api/my-offers', (req, res) => {
         [userId],
         (err, sent) => {
           if (err) return res.status(500).json({ error: err.message });
-          
+
           res.json({
             received: received || [],
             sent: sent || []
@@ -688,7 +688,7 @@ app.get('/api/analytics', (req, res) => {
       stats.totalBookings = result?.count || 0;
 
       // Active requests
-      db.db.get('SELECT COUNT(*) as count FROM job_requests WHERE status = "open"', (err, result) => {
+      db.db.get("SELECT COUNT(*) as count FROM job_requests WHERE status = 'open'", (err, result) => {
         stats.activeRequests = result?.count || 0;
 
         // Average rating
@@ -698,11 +698,11 @@ app.get('/api/analytics', (req, res) => {
           // Bookings by trade
           db.db.all('SELECT trade, COUNT(*) as count FROM bookings GROUP BY trade', (err, results) => {
             stats.bookingsByTrade = results || [];
-            
+
             // Pending offers count
-            db.db.get('SELECT COUNT(*) as count FROM offers WHERE status = "pending"', (err, result) => {
+            db.db.get("SELECT COUNT(*) as count FROM offers WHERE status = 'pending'", (err, result) => {
               stats.pendingOffers = result?.count || 0;
-              
+
               res.json(stats);
             });
           });
@@ -854,8 +854,8 @@ app.post('/api/integrations/openclaw/test', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: Date.now(),
     websocket: wss.clients.size,
     database: process.env.DATABASE_URL ? 'postgres' : 'sqlite'

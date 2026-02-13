@@ -28,6 +28,10 @@ class PostgresDatabase {
 
         this.pool = pool;
 
+        // Compatibility shim: server.js uses db.db.get/all/run for raw queries (SQLite pattern).
+        // Point this.db to self so those calls route to our helper methods.
+        this.db = this;
+
         // Note: Schema initialization should be done manually or via migration tools for Postgres
         // We won't run 'initSchema' automatically here like SQLite to avoid overwriting or conflicts.
     }
@@ -284,6 +288,117 @@ class PostgresDatabase {
              FROM ratings 
              WHERE rated_id = ?`,
             [contractorId],
+            callback
+        );
+    }
+
+    // ─── Subscription methods ───────────────────────────────────
+    getSubscription(userId, callback) {
+        this.get(
+            `SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
+            [userId],
+            callback
+        );
+    }
+
+    createSubscription(sub, callback) {
+        const { id, userId, plan, status, stripeCustomerId, stripeSubscriptionId, currentPeriodStart, currentPeriodEnd } = sub;
+        this.run(
+            `INSERT INTO subscriptions (id, user_id, plan, status, stripe_customer_id, stripe_subscription_id, current_period_start, current_period_end)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, userId, plan, status, stripeCustomerId, stripeSubscriptionId, currentPeriodStart, currentPeriodEnd],
+            callback
+        );
+    }
+
+    updateSubscription(stripeSubscriptionId, updates, callback) {
+        const fields = [];
+        const values = [];
+        if (updates.status) { fields.push('status = ?'); values.push(updates.status); }
+        if (updates.plan) { fields.push('plan = ?'); values.push(updates.plan); }
+        if (updates.currentPeriodStart) { fields.push('current_period_start = ?'); values.push(updates.currentPeriodStart); }
+        if (updates.currentPeriodEnd) { fields.push('current_period_end = ?'); values.push(updates.currentPeriodEnd); }
+        fields.push('updated_at = ?');
+        values.push(Math.floor(Date.now() / 1000));
+        values.push(stripeSubscriptionId);
+
+        this.run(
+            `UPDATE subscriptions SET ${fields.join(', ')} WHERE stripe_subscription_id = ?`,
+            values,
+            callback
+        );
+    }
+
+    // ─── Plan limits methods ────────────────────────────────────
+    getPlanLimits(plan, callback) {
+        this.get(`SELECT * FROM plan_limits WHERE plan = ?`, [plan], callback);
+    }
+
+    getUserActiveJobCount(userId, callback) {
+        this.get(
+            `SELECT COUNT(*) as count FROM job_requests WHERE requester_id = ? AND status = 'open'`,
+            [userId],
+            callback
+        );
+    }
+
+    getUserMonthlyOfferCount(userId, callback) {
+        const monthStart = Math.floor(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime() / 1000);
+        this.get(
+            `SELECT COUNT(*) as count FROM offers WHERE contractor_id = ? AND created_at >= ?`,
+            [userId, monthStart],
+            callback
+        );
+    }
+
+    // ─── Transaction methods ────────────────────────────────────
+    createTransaction(tx, callback) {
+        const { id, bookingId, payerId, amount, platformFee, platformFeeRate, stripePaymentIntentId, status } = tx;
+        this.run(
+            `INSERT INTO transactions (id, booking_id, payer_id, amount, platform_fee, platform_fee_rate, stripe_payment_intent_id, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, bookingId, payerId, amount, platformFee, platformFeeRate, stripePaymentIntentId, status || 'pending'],
+            callback
+        );
+    }
+
+    // ─── OpenClaw connection methods ────────────────────────────
+    getOpenClawConnection(userId, callback) {
+        this.get(
+            `SELECT * FROM openclaw_connections WHERE user_id = ? AND status = 'active'`,
+            [userId],
+            callback
+        );
+    }
+
+    createOpenClawConnection(conn, callback) {
+        const { id, userId, openclawInstanceUrl, apiKeyHash, channels } = conn;
+        this.run(
+            `INSERT INTO openclaw_connections (id, user_id, openclaw_instance_url, api_key_hash, channels)
+             VALUES (?, ?, ?, ?, ?)`,
+            [id, userId, openclawInstanceUrl, apiKeyHash, JSON.stringify(channels || {})],
+            callback
+        );
+    }
+
+    updateOpenClawConnection(id, updates, callback) {
+        const fields = [];
+        const values = [];
+        if (updates.channels) { fields.push('channels = ?'); values.push(JSON.stringify(updates.channels)); }
+        if (updates.status) { fields.push('status = ?'); values.push(updates.status); }
+        values.push(id);
+
+        this.run(
+            `UPDATE openclaw_connections SET ${fields.join(', ')} WHERE id = ?`,
+            values,
+            callback
+        );
+    }
+
+    deleteOpenClawConnection(userId, callback) {
+        this.run(
+            `UPDATE openclaw_connections SET status = 'disconnected' WHERE user_id = ?`,
+            [userId],
             callback
         );
     }
