@@ -36,6 +36,46 @@ class PostgresDatabase {
         // We won't run 'initSchema' automatically here like SQLite to avoid overwriting or conflicts.
     }
 
+    // ─── Shared SQL translation (SQLite → Postgres) ─────────
+    _cleanSql(text) {
+        // 1. Convert ? placeholders to $1, $2, ...
+        let paramCount = 1;
+        let sql = text.replace(/\?/g, () => `$${paramCount++}`);
+
+        // 2. strftime('%s', 'now', '-N days') → EXTRACT(EPOCH FROM NOW() - INTERVAL 'N days')
+        sql = sql.replace(
+            /strftime\('%s',\s*'now',\s*'(-?\d+)\s+days?'\)/gi,
+            (_, days) => {
+                const absDays = Math.abs(parseInt(days, 10));
+                return `EXTRACT(EPOCH FROM NOW() - INTERVAL '${absDays} days')`;
+            }
+        );
+
+        // 3. strftime('%s', 'now') → EXTRACT(EPOCH FROM NOW())
+        sql = sql.replace(/strftime\('%s',\s*'now'\)/gi, 'EXTRACT(EPOCH FROM NOW())');
+
+        // 4. INSERT OR REPLACE → INSERT ... ON CONFLICT DO UPDATE
+        sql = sql.replace(
+            /INSERT\s+OR\s+REPLACE\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/gi,
+            (_, table, columns, values) => {
+                const cols = columns.split(',').map(c => c.trim());
+                const firstCol = cols[0];
+                const updateCols = cols.slice(1).map(c => `${c} = EXCLUDED.${c}`).join(', ');
+                return `INSERT INTO ${table} (${columns}) VALUES (${values}) ON CONFLICT (${firstCol}) DO UPDATE SET ${updateCols}`;
+            }
+        );
+
+        // 5. INSERT OR IGNORE → INSERT ... ON CONFLICT DO NOTHING
+        sql = sql.replace(
+            /INSERT\s+OR\s+IGNORE\s+INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/gi,
+            (_, table, columns, values) => {
+                return `INSERT INTO ${table} (${columns}) VALUES (${values}) ON CONFLICT DO NOTHING`;
+            }
+        );
+
+        return sql;
+    }
+
     // Helper to mimic SQLite callback behavior
     query(text, params, callback) {
         // If params is callback (2 args)
@@ -44,15 +84,10 @@ class PostgresDatabase {
             params = [];
         }
 
-        this.pool.query(text, params)
-            .then(res => {
-                // Formatting rows to match what the app expects (array of objects)
-                // For 'run' commands (INSERT/UPDATE), results might differ.
-                // SQLite 'run' returns `this.lastID` and `this.changes`.
-                // PG returns `rowCount`.
-                // We'll try to normalize.
+        const pgText = this._cleanSql(text);
 
-                // If callback expects (err, rows) or (err)
+        this.pool.query(pgText, params)
+            .then(res => {
                 if (callback) callback(null, res.rows);
             })
             .catch(err => {
@@ -67,9 +102,7 @@ class PostgresDatabase {
             params = [];
         }
 
-        // Convert ? to $1, $2, etc.
-        let paramCount = 1;
-        const pgText = text.replace(/\?/g, () => `$${paramCount++}`);
+        const pgText = this._cleanSql(text);
 
         this.pool.query(pgText, params)
             .then(res => {
@@ -87,9 +120,7 @@ class PostgresDatabase {
             params = [];
         }
 
-        // Convert ? to $1, $2, etc.
-        let paramCount = 1;
-        const pgText = text.replace(/\?/g, () => `$${paramCount++}`);
+        const pgText = this._cleanSql(text);
 
         this.pool.query(pgText, params)
             .then(res => {
@@ -107,15 +138,9 @@ class PostgresDatabase {
             params = [];
         }
 
-        // Convert ? to $1, $2, etc.
-        let paramCount = 1;
-        const pgText = text.replace(/\?/g, () => `$${paramCount++}`);
+        const pgText = this._cleanSql(text);
 
-        // Handle specific SQLite syntax replacements if needed (e.g., strftime)
-        // Basic replacement: strftime('%s', 'now') -> EXTRACT(EPOCH FROM NOW())
-        const pgTextClean = pgText.replace(/strftime\('%s', 'now'\)/g, "EXTRACT(EPOCH FROM NOW())");
-
-        this.pool.query(pgTextClean, params)
+        this.pool.query(pgText, params)
             .then(res => {
                 // Mimic context for 'this.lastID' if possible, but PG returns the inserted row ONLY if RETURNING clause is used.
                 // Since our original code doesn't use `this.lastID` heavily (UUIDs are generated in app), we might be okay.

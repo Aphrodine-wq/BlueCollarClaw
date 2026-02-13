@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Database = require('./database');
+const createDatabase = require('./db-factory');
 const BlueCollarClawNetwork = require('./network');
 const { nanoid } = require('nanoid');
 const readline = require('readline');
@@ -50,7 +50,7 @@ async function setup() {
   console.log();
 
   const name = await question('  Company/Contractor Name: ');
-  
+
   // Step 2: What do you do?
   log('\nSTEP 2: What\'s your primary trade?', 'bright');
   console.log();
@@ -113,8 +113,8 @@ async function setup() {
   const keys = BlueCollarClawNetwork.generateKeypair();
   const contractorId = `contractor_${nanoid()}`;
 
-  const db = new Database();
-  
+  const db = createDatabase();
+
   await new Promise(resolve => setTimeout(resolve, 300)); // Wait for DB init
 
   // Create contractor
@@ -200,7 +200,7 @@ async function setup() {
   // Save to config file for convenience
   const fs = require('fs');
   const configPath = './my-BlueCollarClaw-config.txt';
-  
+
   fs.writeFileSync(configPath, `# BlueCollarClaw Configuration
 # Generated: ${new Date().toISOString()}
 

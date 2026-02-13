@@ -4,9 +4,9 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const DiscordStrategy = require('passport-discord').Strategy;
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const Database = require('./database');
+const createDatabase = require('./db-factory');
 
-const db = new Database();
+const db = createDatabase();
 
 // Serialize user to session
 passport.serializeUser((user, done) => {

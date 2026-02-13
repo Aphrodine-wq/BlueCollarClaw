@@ -12,14 +12,14 @@
  *   node message-handler.js
  */
 
-const Database = require('./database');
+const createDatabase = require('./db-factory');
 const NaturalLanguageParser = require('./message-parser');
 const { nanoid } = require('nanoid');
 const fs = require('fs');
 
 class MessageHandler {
   constructor() {
-    this.db = new Database();
+    this.db = createDatabase();
     this.parser = new NaturalLanguageParser();
     this.sessions = new Map(); // Track conversation state
   }
@@ -159,7 +159,7 @@ View offers anytime: /offers`;
           // User is giving more details
           const updated = this.parser.parse(message);
           session.data = { ...session.data, ...updated };
-          
+
           const confirmation = this.parser.generateConfirmation(session.data);
           return confirmation.message;
         }
@@ -243,7 +243,7 @@ View offers anytime: /offers`;
 
       case 5: // Scope
         data.scope = message.trim();
-        
+
         // Create job
         const requestId = await this.createJobRequest(contractorId, data);
         this.sessions.delete(contractorId);
@@ -293,7 +293,7 @@ View offers: /offers`;
   async getMyJobs(contractorId) {
     return new Promise((resolve) => {
       this.db.db.all(
-        'SELECT * FROM job_requests WHERE requester_id = ? AND status = "open" ORDER BY created_at DESC LIMIT 5',
+        "SELECT * FROM job_requests WHERE requester_id = ? AND status = 'open' ORDER BY created_at DESC LIMIT 5",
         [contractorId],
         (err, jobs) => {
           if (err || !jobs || jobs.length === 0) {
@@ -301,7 +301,7 @@ View offers: /offers`;
             return;
           }
 
-          const list = jobs.map(j => 
+          const list = jobs.map(j =>
             `📋 ${j.trade} - ${j.location}\n💰 $${j.min_rate}-$${j.max_rate}/hr\n📅 ${j.start_date}`
           ).join('\n\n');
 
@@ -318,7 +318,7 @@ View offers: /offers`;
          FROM offers o 
          JOIN job_requests j ON o.request_id = j.id 
          JOIN contractors c ON o.contractor_id = c.id
-         WHERE j.requester_id = ? AND o.status = "pending"
+         WHERE j.requester_id = ? AND o.status = 'pending'
          ORDER BY o.created_at DESC LIMIT 5`,
         [contractorId],
         (err, offers) => {
@@ -327,7 +327,7 @@ View offers: /offers`;
             return;
           }
 
-          const list = offers.map(o => 
+          const list = offers.map(o =>
             `📬 ${o.name}\n🔨 ${o.trade} in ${o.location}\n💰 $${o.rate}/hr\n\nReply "accept ${o.id.substr(0, 8)}" to book`
           ).join('\n\n');
 
@@ -341,10 +341,10 @@ View offers: /offers`;
     return new Promise((resolve) => {
       this.db.db.get('SELECT COUNT(*) as count FROM contractors', (err, result) => {
         const contractors = result?.count || 0;
-        
+
         this.db.db.get('SELECT COUNT(*) as count FROM bookings', (err, result) => {
           const bookings = result?.count || 0;
-          
+
           resolve(`🤝 BlueCollarClaw Status
 
 👥 ${contractors} contractors

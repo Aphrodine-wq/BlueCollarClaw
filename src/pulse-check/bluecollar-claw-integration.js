@@ -1,18 +1,18 @@
 // BlueCollarClaw Integration for Pulse Check
 // Adds contractor-specific briefing data
 
-const Database = require('../database');
+const createDatabase = require('../db-factory');
 
 async function getBlueCollarClawStatus() {
-  const db = new Database();
-  
+  const db = createDatabase();
+
   await new Promise(resolve => setTimeout(resolve, 200)); // Wait for DB init
 
   const parts = [];
 
   // Get today's bookings
   const today = new Date().toISOString().split('T')[0];
-  
+
   const todaysBookings = await new Promise((resolve) => {
     db.db.all(
       `SELECT b.*, c.name as sub_name 
@@ -61,7 +61,7 @@ async function getBlueCollarClawStatus() {
   // Get this week's stats
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-  
+
   const weekStats = await new Promise((resolve) => {
     db.db.get(
       `SELECT COUNT(*) as count FROM bookings WHERE created_at >= ?`,

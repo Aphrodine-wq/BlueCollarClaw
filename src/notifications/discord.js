@@ -11,28 +11,28 @@
  * - DISCORD_CLIENT_ID
  */
 
-const { 
-  Client, 
-  GatewayIntentBits, 
-  Events, 
-  SlashCommandBuilder, 
+const {
+  Client,
+  GatewayIntentBits,
+  Events,
+  SlashCommandBuilder,
   Routes,
   REST,
   PermissionFlagsBits
 } = require('discord.js');
 
-const Database = require('../database');
+const createDatabase = require('../db-factory');
 const MessageHandler = require('../message-handler');
 const { nanoid } = require('nanoid');
 
 class DiscordChannel {
   constructor(messageHandler) {
     this.messageHandler = messageHandler || new MessageHandler();
-    this.db = new Database();
+    this.db = createDatabase();
     this.client = null;
     this.token = process.env.DISCORD_BOT_TOKEN;
     this.clientId = process.env.DISCORD_CLIENT_ID;
-    
+
     // Map Discord users to contractors
     this.userContractorMap = new Map();
   }
@@ -118,23 +118,23 @@ class DiscordChannel {
           option.setName('description')
             .setDescription('Describe the work needed')
             .setRequired(false)),
-      
+
       new SlashCommandBuilder()
         .setName('offers')
         .setDescription('View your offers received or made'),
-      
+
       new SlashCommandBuilder()
         .setName('status')
         .setDescription('Check BlueCollarClaw system status'),
-      
+
       new SlashCommandBuilder()
         .setName('help')
         .setDescription('Get help with BlueCollarClaw'),
-      
+
       new SlashCommandBuilder()
         .setName('myjobs')
         .setDescription('View your active job requests'),
-      
+
       new SlashCommandBuilder()
         .setName('accept')
         .setDescription('Accept an offer')
@@ -189,9 +189,9 @@ class DiscordChannel {
       }
     } catch (error) {
       console.error(`Error handling /${commandName}:`, error);
-      await interaction.reply({ 
-        content: 'Sorry, something went wrong. Please try again.', 
-        ephemeral: true 
+      await interaction.reply({
+        content: 'Sorry, something went wrong. Please try again.',
+        ephemeral: true
       });
     }
   }
@@ -203,7 +203,7 @@ class DiscordChannel {
     await interaction.deferReply({ ephemeral: true });
 
     const contractor = await this.getOrCreateContractor(interaction.user);
-    
+
     const trade = interaction.options.getString('trade');
     const location = interaction.options.getString('location');
     const dates = interaction.options.getString('dates');
@@ -232,7 +232,7 @@ class DiscordChannel {
 
     // Create job request
     const requestId = `req_${nanoid(8)}`;
-    
+
     await new Promise((resolve, reject) => {
       this.db.createJobRequest({
         id: requestId,
@@ -300,7 +300,7 @@ class DiscordChannel {
          FROM offers o 
          JOIN job_requests j ON o.request_id = j.id 
          JOIN contractors c ON o.contractor_id = c.id
-         WHERE j.requester_id = ? AND o.status = "pending"
+         WHERE j.requester_id = ? AND o.status = 'pending'
          ORDER BY o.created_at DESC LIMIT 10`,
         [contractor.id],
         (err, rows) => resolve(rows || [])
@@ -392,7 +392,7 @@ You'll be notified when your offer is accepted.`;
 
     const contractor = await this.getOrCreateContractor(interaction.user);
     const response = await this.messageHandler.getMyJobs(contractor.id);
-    
+
     await interaction.editReply({ content: response });
   }
 
@@ -480,7 +480,7 @@ You'll be notified when your offer is accepted.`;
     });
 
     // Notify subcontractor via DM
-    await this.sendDM(offer.contractor_id, 
+    await this.sendDM(offer.contractor_id,
       `🎉 **Your Offer Was Accepted!**\n\n` +
       `📋 Booking ID: ${bookingId}\n` +
       `🔨 ${offer.trade} at ${offer.location}\n` +
@@ -790,10 +790,10 @@ module.exports = DiscordChannel;
 if (require.main === module) {
   const channel = new DiscordChannel();
   const started = channel.start();
-  
+
   if (started) {
     console.log('🤖 BlueCollarClaw Discord Bot started');
-    
+
     // Graceful shutdown
     process.on('SIGINT', () => {
       console.log('\n👋 Shutting down Discord bot...');

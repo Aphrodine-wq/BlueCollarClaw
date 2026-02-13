@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Database = require('./database');
+const createDatabase = require('./db-factory');
 const BlueCollarClawAgent = require('./agent');
 const { nanoid } = require('nanoid');
 const readline = require('readline');
@@ -59,7 +59,7 @@ async function broadcastWizard() {
 
   // Load contractor ID
   let contractorId = await loadContractorId();
-  
+
   if (!contractorId) {
     contractorId = await question('  Your Contractor ID: ');
   } else {
@@ -133,7 +133,7 @@ async function broadcastWizard() {
   // Create request in database
   log('\n  📡 Broadcasting to BlueCollarClaw network...', 'yellow');
 
-  const db = new Database();
+  const db = createDatabase();
   await new Promise(resolve => setTimeout(resolve, 200));
 
   const requestId = `req_${nanoid()}`;

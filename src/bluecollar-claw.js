@@ -128,7 +128,7 @@ async function runDemo() {
     }
     console.log(stdout);
     if (stderr) console.error(stderr);
-    
+
     setTimeout(async () => {
       await question('\n  Press Enter to return to menu...');
       await mainMenu();
@@ -179,7 +179,7 @@ async function startDashboard() {
   console.log();
 
   const child = exec('node server.js');
-  
+
   child.stdout.on('data', (data) => {
     console.log(data);
   });
@@ -208,7 +208,7 @@ async function runTests() {
       console.log(stdout);
       log('\n  ✅ All tests passed!', 'green');
     }
-    
+
     setTimeout(async () => {
       await question('\n  Press Enter to return to menu...');
       await mainMenu();
@@ -265,8 +265,8 @@ async function checkStatus() {
   log('  📊 BlueCollarClaw System Status', 'bright');
   console.log();
 
-  const Database = require('./database');
-  const db = new Database();
+  const createDatabase = require('./db-factory');
+  const db = createDatabase();
 
   await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -285,7 +285,7 @@ async function checkStatus() {
         // Check files
         console.log();
         log('  📁 Generated Files:', 'bright');
-        
+
         const dbExists = fs.existsSync('./BlueCollarClaw.db') || fs.existsSync('./demo.db');
         log(`  Database: ${dbExists ? '✅ Present' : '❌ Not found'}`, dbExists ? 'green' : 'red');
 

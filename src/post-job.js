@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Database = require('./database');
+const createDatabase = require('./db-factory');
 const { nanoid } = require('nanoid');
 const readline = require('readline');
 const fs = require('fs');
@@ -152,7 +152,7 @@ async function postJob() {
   console.log();
   log('  📡 Broadcasting to BlueCollarClaw network...', 'yellow');
 
-  const db = new Database();
+  const db = createDatabase();
   await new Promise(resolve => setTimeout(resolve, 200));
 
   const requestId = `req_${nanoid()}`;

@@ -125,11 +125,11 @@ async function getWeather() {
 // ─────────────────────────────────────────────
 // Database Helper
 // ─────────────────────────────────────────────
-const Database = require('../database');
+const createDatabase = require('../db-factory');
 
 async function withDb(callback) {
   try {
-    const db = new Database();
+    const db = createDatabase();
     await new Promise(resolve => setTimeout(resolve, 200)); // Wait for init
     try {
       return await callback(db);
