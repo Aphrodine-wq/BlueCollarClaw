@@ -152,12 +152,15 @@ app.post('/auth/login', (req, res, next) => {
 });
 
 // Sign Up
-app.post('/auth/signup', (req, res) => {
+app.post('/auth/signup', (req, res, next) => {
   const { email, password, name, role } = req.body;
   const bcrypt = require('bcryptjs');
   const crypto = require('crypto');
 
   db.getUserByEmail(email, (err, existingUser) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
     }
@@ -371,13 +374,19 @@ app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) =>
   const { rate, message, startDate, endDate } = req.body;
   const contractorId = req.user.profileId || req.user.id;
 
+  // Validate rate before it enters the system
+  const parsedRate = parseFloat(rate);
+  if (isNaN(parsedRate) || parsedRate <= 0) {
+    return res.status(400).json({ error: 'Rate must be a positive number.' });
+  }
+
   const offerId = `off_${nanoid(8)}`;
 
   db.createOffer({
     id: offerId,
     requestId: id,
     contractorId: contractorId,
-    rate: parseFloat(rate),
+    rate: parsedRate,
     startDate: startDate,
     endDate: endDate,
     message: message || '',
@@ -395,7 +404,7 @@ app.post('/api/requests/:id/offers', planLimits.checkOfferLimit(), (req, res) =>
             id: offerId,
             request_id: id,
             contractor_id: contractorId,
-            rate: rate,
+            rate: parsedRate,
             status: 'pending'
           },
           job: jobRequest
@@ -434,6 +443,14 @@ app.post('/api/offers/:id/accept', async (req, res) => {
 
     if (!offer) {
       return res.status(404).json({ message: 'Offer not found or not authorized' });
+    }
+
+    // Validate critical offer fields before proceeding with money operations
+    if (offer.rate == null || isNaN(offer.rate) || offer.rate <= 0) {
+      return res.status(400).json({ message: 'Offer has invalid rate. Cannot create booking.' });
+    }
+    if (!offer.contractor_id) {
+      return res.status(400).json({ message: 'Offer is missing contractor. Cannot create booking.' });
     }
 
     // Create booking

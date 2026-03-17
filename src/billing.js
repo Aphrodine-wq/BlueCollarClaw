@@ -96,7 +96,12 @@ class Billing {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        const userId = session.metadata.bluecollar_user_id;
+        const userId = session.metadata?.bluecollar_user_id;
+
+        if (!userId) {
+          console.error('Webhook checkout.session.completed missing bluecollar_user_id in metadata');
+          break;
+        }
 
         if (session.mode === 'subscription') {
           const stripeSubscription = await getStripe().subscriptions.retrieve(session.subscription);
@@ -149,6 +154,17 @@ class Billing {
 
   // Calculate platform fee for a booking
   calculatePlatformFee(bookingRate, hours, feeRate) {
+    // Defensive guards — these params feed real transaction records
+    if (bookingRate == null || isNaN(bookingRate) || bookingRate < 0) {
+      throw new Error(`Invalid bookingRate: ${bookingRate}`);
+    }
+    if (hours == null || isNaN(hours) || hours <= 0) {
+      throw new Error(`Invalid hours: ${hours}`);
+    }
+    if (feeRate == null || isNaN(feeRate) || feeRate < 0 || feeRate > 1) {
+      throw new Error(`Invalid feeRate: ${feeRate}`);
+    }
+
     const totalAmount = bookingRate * hours;
     const platformFee = totalAmount * feeRate;
     return {
@@ -206,6 +222,12 @@ class Billing {
 
 // Verify Stripe webhook signature
 function verifyWebhookSignature(payload, signature) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    throw new Error('STRIPE_WEBHOOK_SECRET not configured. Webhook verification cannot proceed.');
+  }
+  if (!signature) {
+    throw new Error('Missing stripe-signature header.');
+  }
   return getStripe().webhooks.constructEvent(
     payload,
     signature,

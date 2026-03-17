@@ -13,6 +13,12 @@ class ContractGenerator {
   }
 
   async generateSubcontractorAgreement(booking, gcInfo, subInfo) {
+    // Validate required fields before generating a legal document
+    if (!booking || !booking.id) throw new Error('Contract generation requires a valid booking with an id.');
+    if (booking.rate == null || isNaN(booking.rate)) throw new Error('Contract generation requires a valid numeric rate.');
+    if (!booking.trade) throw new Error('Contract generation requires a trade.');
+    if (!gcInfo?.name || !subInfo?.name) throw new Error('Contract generation requires both party names.');
+
     return new Promise((resolve, reject) => {
       const filename = `contract_${booking.id}.pdf`;
       const filepath = path.join(this.outputDir, filename);
